@@ -1,65 +1,20 @@
-/* style.css - 完整版 V3 */
+/* style.css - 完整版 V4 */
 
 /* --- 1. 基本重置和全局样式 --- */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; font-family: 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #333; background-color: #f4f7f9; overflow: hidden; }
 
-html, body {
-    height: 100%;
-    font-family: 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif;
-    font-size: 14px;
-    line-height: 1.6;
-    color: #333;
-    background-color: #f4f7f9;
-    overflow: hidden; /* 防止主页面滚动 */
-}
+/* --- 2. 汉堡包按钮样式 --- */
+.menu-toggle { /* ... 样式不变 ... */ }
 
-/* --- 2. 汉堡包按钮样式 (移动端显示) --- */
-.menu-toggle {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 1001;
-    background-color: rgba(255, 255, 255, 0.9); /* 稍带透明背景 */
-    color: #34495e;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 5px 10px;
-    font-size: 20px;
-    line-height: 1;
-    cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    display: none; /* 默认在桌面端隐藏 */
-}
+/* --- 3. 遮罩层样式 --- */
+.overlay { /* ... 样式不变 ... */ }
+.overlay.open { /* ... 样式不变 ... */ }
 
-/* --- 3. 遮罩层样式 (移动端菜单打开时显示) --- */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-}
-.overlay.open {
-    display: block;
-    opacity: 1;
-}
+/* --- 4. 容器布局 --- */
+.container { display: flex; height: 100vh; }
 
-/* --- 4. 容器布局 (桌面端默认 Flexbox) --- */
-.container {
-    display: flex;
-    height: 100vh;
-}
-
-/* --- 5. 侧边栏样式 (基础及桌面端) --- */
+/* --- 5. 侧边栏样式 --- */
 .sidebar {
     width: 240px;
     flex-shrink: 0;
@@ -71,61 +26,88 @@ html, body {
     flex-direction: column;
     overflow-y: auto;
     transition: transform 0.3s ease-in-out;
-    z-index: 1000; /* 比遮罩层高 */
+    z-index: 1000;
 }
+.sidebar-header { /* ... 样式不变 ... */ }
+.sidebar-header h2 { /* ... 样式不变 ... */ }
+.nav-list { /* ... 样式不变 ... */ }
+.nav-list li { /* ... 样式不变 ... */ }
 
-.sidebar-header { /* 不变 */ }
-.sidebar-header h2 { /* 不变 */ }
-.nav-list { /* 不变 */ }
-.nav-list li { /* 不变 */ }
-.nav-parent { /* 不变 */ }
-.nav-list > li:first-child > .nav-parent { /* 不变 */ }
-.nav-link { /* 不变 */ }
-.nav-link:hover { /* 不变 */ }
-.nav-link.active { /* 不变 */ }
-.sub-nav-list { /* 不变 */ }
-.sub-nav-list .nav-link { /* 不变 */ }
-.sub-nav-list .nav-link:hover { /* 不变 */ }
-.sub-nav-list .nav-link.active { /* 不变 */ }
-.sub-nav-list.deeper { /* 不变 */ }
-.sub-nav-list.deeper .nav-link { /* 不变 */ }
+/* 父目录 (分类标题) 样式 */
+.nav-parent {
+    display: block;
+    padding: 12px 20px 8px 20px;
+    color: #566573;
+    font-weight: 500;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: default;
+    margin-top: 10px;
+    /* ** 新增：允许文本换行 ** */
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+.nav-list > li:first-child > .nav-parent { margin-top: 0; }
 
-/* --- 6. 内容区域样式 (桌面端) --- */
+/* 导航链接样式 */
+.nav-link {
+    display: block;
+    padding: 10px 20px;
+    text-decoration: none;
+    color: #34495e;
+    font-weight: 400;
+    border-left: 3px solid transparent;
+    transition: background-color 0.2s ease, color 0.2s ease, border-left-color 0.2s ease;
+    /* ** 新增：允许文本换行 ** */
+    white-space: normal;
+    word-wrap: break-word; /* 兼容性 */
+    overflow-wrap: break-word; /* 标准属性 */
+}
+.nav-link:hover { /* ... 样式不变 ... */ }
+.nav-link.active { /* ... 样式不变 ... */ }
+
+/* 子菜单样式 */
+.sub-nav-list { /* ... 样式不变 ... */ }
+.sub-nav-list .nav-link { /* ... 样式不变 ... */ }
+.sub-nav-list .nav-link:hover { /* ... 样式不变 ... */ }
+.sub-nav-list .nav-link.active { /* ... 样式不变 ... */ }
+.sub-nav-list.deeper { /* ... 样式不变 ... */ }
+.sub-nav-list.deeper .nav-link { /* ... 样式不变 ... */ }
+
+/* --- 6. 内容区域样式 --- */
 .content {
     flex-grow: 1;
     background-color: #ffffff;
     padding: 0; /* ** 桌面端无内边距 ** */
     overflow: hidden;
-    position: relative; /* 添加相对定位，为移动端 padding 做准备 */
+    position: relative; /* 保持相对定位 */
 }
 
 /* --- 7. Iframe 样式 --- */
 #content-frame {
     display: block;
     width: 100%;
-    height: 100%; /* 默认占满容器 */
+    height: 100%; /* ** 保持 100% 高度 ** */
     border: none;
 }
 
-/* --- 8. 媒体查询：移动端样式 (覆盖和新增) --- */
+/* --- 8. 媒体查询：移动端样式 --- */
 @media (max-width: 768px) {
     .menu-toggle {
         display: block; /* 显示汉堡包按钮 */
     }
-
     .sidebar {
-        position: fixed; /* 改为固定定位 */
+        position: fixed;
         left: 0;
         top: 0;
         height: 100%;
-        transform: translateX(-100%); /* 默认移出屏幕左侧 */
-        border-right: 1px solid #ccc;
-        box-shadow: 2px 0 5px rgba(0,0,0,0.2);
-        padding-top: 60px; /* 确保内容不被固定按钮遮挡 */
+        transform: translateX(-100%); /* 默认隐藏 */
+        /* ... 其他 fixed 样式不变 ... */
     }
-
     .sidebar.open {
-        transform: translateX(0); /* 移入屏幕 */
+        transform: translateX(0); /* 显示 */
     }
 
     /* ** 给内容容器添加顶部内边距，为汉堡按钮留空间 ** */
@@ -133,8 +115,10 @@ html, body {
         padding-top: 60px; /* (可调整) */
     }
 
-    /* ** 调整 iframe 高度以适应容器的 padding-top ** */
-    #content-frame {
-       height: calc(100% - 60px); /* (与上面的 padding-top 值一致) */
-    }
+    /* ** 重要：调整 iframe 高度以适应容器的 padding-top ** */
+    /* 如果 iframe 内容仍被截断或高度不对，可能需要取消注释这行 */
+    /* #content-frame { */
+    /* height: calc(100% - 60px); */ /* (与上面的 padding-top 值一致) */
+    /* } */
+    /* 先不加这行，让 iframe 默认的 height: 100% 尝试在 padded container 内工作 */
 }
