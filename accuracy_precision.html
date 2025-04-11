@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>正确度与精密度演示</title>
-    <script src="https://cdn.bootcdn.net/ajax/libs/plotly.js/2.35.3/plotly-cartesian.min.js" charset="utf-8"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/plotly.js/2.35.3/plotly.min.js" charset="utf-8"></script>
     <style>
         /* 基本样式 */
         body {
@@ -12,7 +12,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 15px; /* 桌面端基本内边距 */
+            padding: 15px; /* 桌面端左右下内边距 */
+            padding-top: 15px; /* 桌面端顶部内边距 */
             background-color: #f8f9fa;
             margin: 0;
             box-sizing: border-box;
@@ -33,14 +34,13 @@
         #plot {
             width: 95%; max-width: 550px; height: auto; aspect-ratio: 1 / 1; background-color: #fff;
             border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin: 0 auto;
-             /* ** 确保没有 margin-top ** */
         }
 
         /* --- 移动端响应式调整 --- */
         @media (max-width: 768px) {
             body {
                 padding: 10px; /* 移动端左右下内边距 */
-                /* ** 移除 body padding-top ** */
+                /* ** 确认 body 没有 padding-top ** */
             }
             .controls {
                 flex-direction: column; align-items: stretch; gap: 15px; padding: 10px;
@@ -54,30 +54,33 @@
             .buttons button { width: 100%; font-size: 11px; padding: 8px 5px; }
             #plot {
                 width: 100%; max-width: none; height: auto; min-height: 300px;
-                 /* ** 确保移除 #plot margin-top ** */
+                 /* ** 确保 #plot 没有 margin-top ** */
             }
         }
     </style>
 </head>
 <body>
+
     <div class="controls">...</div>
     <div id="plot"></div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // ... 所有 JS 代码保持不变 ...
              function createPlot() {
-                 // ... layout ...
+                 // ... layout (包括 shapes) ...
                  if (plotDiv && typeof Plotly !== 'undefined') {
                     Plotly.newPlot(plotDiv, [trace], layout, {
                         responsive: true,
                         displayModeBar: false // 保持隐藏
                     });
-                } // ...
+                } else { console.error("无法初始化 Plotly"); }
             }
             // ...
             createPlot();
             // ...
         });
     </script>
+
 </body>
 </html>
