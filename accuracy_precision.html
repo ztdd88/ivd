@@ -15,12 +15,10 @@
             padding: 15px;
             background-color: #f8f9fa;
             margin: 0;
-            min-height: calc(100vh - 30px);
+            min-height: calc(100vh - 30px); /* 考虑 body padding */
             box-sizing: border-box;
-            /* ** 确保 body 没有额外的顶部内边距 ** */
         }
         .controls {
-            /* 保持之前的样式 */
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
@@ -35,19 +33,38 @@
             max-width: 700px;
             box-sizing: border-box;
         }
-        .control-group { /* 不变 */ }
-        .control-group label { /* 不变 */ }
-        .control-group input[type="range"] { /* 不变 */ }
-        .control-group output { /* 不变 */ }
-        .buttons { /* 保持 grid 布局 */
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .control-group label {
+            font-weight: 500;
+            color: #555;
+            width: 60px;
+            text-align: right;
+            font-size: 13px;
+        }
+        .control-group input[type="range"] {
+            width: 130px;
+            cursor: pointer;
+        }
+        .control-group output {
+            font-weight: bold;
+            color: #333;
+            min-width: 30px;
+            text-align: left;
+            font-size: 13px;
+        }
+        .buttons {
            display: grid;
-           grid-template-columns: repeat(2, auto);
+           grid-template-columns: repeat(2, auto); /* 两列自适应宽度 */
            gap: 8px 12px;
            justify-content: center;
         }
-        .buttons button { /* 保持小按钮样式 */
-            padding: 5px 10px;
-            font-size: 11px;
+        .buttons button {
+            padding: 5px 10px; /* 小按钮内边距 */
+            font-size: 11px;   /* 小按钮字体 */
             border: 1px solid #ccc;
             border-radius: 4px;
             background-color: #f0f0f0;
@@ -55,10 +72,11 @@
             transition: background-color 0.2s ease, border-color 0.2s ease;
             white-space: nowrap;
         }
-        .buttons button:hover { /* 不变 */ }
-
+        .buttons button:hover {
+            background-color: #e0e0e0;
+            border-color: #bbb;
+        }
         #plot {
-            /* 保持之前的样式 */
             width: 95%;
             max-width: 550px;
             height: auto;
@@ -66,42 +84,51 @@
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-left: auto; /* 左右自动边距使其居中 */
-            margin-right: auto;
-            /* ** 默认没有上外边距 ** */
-            margin-top: 0;
+            margin: 0 auto; /* 左右居中 */
+            margin-top: 0;  /* 默认无上外边距 */
         }
 
-        /* --- ** 移动端响应式调整 ** --- */
+        /* --- 移动端响应式调整 --- */
         @media (max-width: 768px) {
             body {
-                padding: 10px; /* 左右padding */
-                 /* ** 移除之前添加的 body padding-top ** */
-                min-height: calc(100vh - 20px); /* 恢复简单计算 */
+                padding: 10px;
+                min-height: calc(100vh - 20px);
+                /* ** 不再需要 body padding-top ** */
             }
             .controls {
-                /* 保持之前的移动端样式 */
                 flex-direction: column;
                 align-items: stretch;
                 gap: 15px;
                 padding: 10px;
             }
-            .control-group { /* 不变 */ }
-            .control-group label { /* 不变 */ }
-            .control-group input[type="range"] { width: 100%; /* 不变 */ }
-            .control-group output { /* 不变 */ }
+            .control-group {
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
+                gap: 5px;
+            }
+            .control-group label { width: auto; text-align: left; margin-bottom: 3px; }
+            .control-group input[type="range"] { width: 100%; }
+            .control-group output { min-width: 40px; text-align: left; margin-top: 3px; }
 
-            /* 保持按钮在移动端的 2x2 网格布局 */
-            .buttons { /* 不变 */ }
-            .buttons button { /* 不变 */ }
-
+            .buttons {
+                display: grid;
+                grid-template-columns: 1fr 1fr; /* 强制两列等宽 */
+                gap: 8px;
+                width: 100%;
+                margin-top: 10px;
+            }
+            .buttons button {
+                width: 100%;
+                font-size: 11px;
+                padding: 8px 5px;
+            }
             #plot {
-                /* 保持之前的移动端宽度等样式 */
                 width: 100%;
                 max-width: none;
                 height: auto;
                 min-height: 300px;
-                /* ** 新增：给绘图区域添加上外边距，避开汉堡包按钮 ** */
+                /* ** 给绘图区域添加上外边距，避开 index.html 的汉堡包按钮 ** */
                 margin-top: 55px;
             }
         }
@@ -110,7 +137,7 @@
 <body>
 
     <div class="controls">
-       <div class="control-group">
+        <div class="control-group">
             <label for="accuracySlider">正确度:</label>
             <input type="range" id="accuracySlider" min="0" max="1" step="0.01" value="0.8">
             <output id="accuracyValue">0.80</output>
@@ -130,55 +157,144 @@
     <div id="plot"></div>
 
     <script>
-        // ... JavaScript 变量获取不变 ...
-        const plotDiv = document.getElementById('plot');
-        // ...
+        // ** 确保所有操作在 DOM 加载完成后执行 **
+        document.addEventListener('DOMContentLoaded', function() {
 
-        // ... 常量定义不变 ...
-        const MAX_OFFSET = 4.0;
-        // ...
+            // 获取 DOM 元素
+            const plotDiv = document.getElementById('plot');
+            const accuracySlider = document.getElementById('accuracySlider');
+            const precisionSlider = document.getElementById('precisionSlider');
+            const accuracyValueSpan = document.getElementById('accuracyValue');
+            const precisionValueSpan = document.getElementById('precisionValue');
+            const btnGoodGood = document.getElementById('btnGoodGood');
+            const btnGoodPoor = document.getElementById('btnGoodPoor');
+            const btnPoorGood = document.getElementById('btnPoorGood');
+            const btnPoorPoor = document.getElementById('btnPoorPoor');
 
-        function randn_bm() { /* ... 不变 ... */ }
-        function generatePoints(accuracy, precision) { /* ... 不变 ... */ }
-        function updatePlot() { /* ... 不变 ... */ }
+            // 参数常量
+            const MAX_OFFSET = 4.0;
+            const MAX_STD_DEV = 3.0;
+            const MIN_STD_DEV = 0.3;
+            const NUM_POINTS = 30;
+            const PLOT_RANGE = 10;
 
-        function createPlot() {
-             // ... 获取 initial 数据不变 ...
-            const initialAccuracy = parseFloat(accuracySlider.value);
-            const initialPrecision = parseFloat(precisionSlider.value);
-            const initialPoints = generatePoints(initialAccuracy, initialPrecision);
+            // Box-Muller 变换生成正态分布随机数
+            function randn_bm() {
+                let u = 0, v = 0;
+                while (u === 0) u = Math.random();
+                while (v === 0) v = Math.random();
+                return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+            }
 
-            const trace = { /* ... trace 定义不变 ... */ };
+            // 生成数据点函数
+            function generatePoints(accuracy, precision) {
+                const meanOffsetDistance = MAX_OFFSET * (1 - accuracy);
+                const meanX = meanOffsetDistance / Math.sqrt(2);
+                const meanY = meanOffsetDistance / Math.sqrt(2);
+                const stdDev = MAX_STD_DEV - precision * (MAX_STD_DEV - MIN_STD_DEV);
+                const xPoints = [];
+                const yPoints = [];
+                for (let i = 0; i < NUM_POINTS; i++) {
+                    xPoints.push(randn_bm() * stdDev + meanX);
+                    yPoints.push(randn_bm() * stdDev + meanY);
+                }
+                return { x: xPoints, y: yPoints };
+            }
 
-            const layout = {
-                title: { /* ... 标题样式不变 ... */
-                    text: '正确度 (Accuracy) vs 精密度 (Precision)',
-                    font: { size: 16 }
-                },
-                xaxis: { /* ... xaxis 定义不变 ... */ },
-                yaxis: { /* ... yaxis 定义不变 ... */ },
-                showlegend: false,
-                margin: { l: 25, r: 25, t: 60, b: 30 }, // 保持减小的边距
-                shapes: [ /* ... shapes 定义不变 ... */ ]
-            };
+            // 更新绘图函数
+            function updatePlot() {
+                if (!accuracySlider || !precisionSlider || !plotDiv || typeof Plotly === 'undefined') return; // 增加健壮性检查
 
-            // ** 保持隐藏 modebar **
-            Plotly.newPlot(plotDiv, [trace], layout, {
-                responsive: true,
-                displayModeBar: false
-            });
-        }
+                const accuracy = parseFloat(accuracySlider.value);
+                const precision = parseFloat(precisionSlider.value);
 
-        // Event listeners (不变)
-        accuracySlider.addEventListener('input', updatePlot);
-        // ...
+                if (accuracyValueSpan) accuracyValueSpan.textContent = accuracy.toFixed(2);
+                if (precisionValueSpan) precisionValueSpan.textContent = precision.toFixed(2);
 
-        // Initial Plot Creation (不变)
-        createPlot();
-        // Initial value display update (不变)
-        accuracyValueSpan.textContent = parseFloat(accuracySlider.value).toFixed(2);
-        precisionValueSpan.textContent = parseFloat(precisionSlider.value).toFixed(2);
+                const points = generatePoints(accuracy, precision);
 
+                Plotly.restyle(plotDiv, {
+                    x: [points.x],
+                    y: [points.y]
+                }, [0]); // 只更新第一个 trace (数据点)
+            }
+
+            // 初始化绘图函数
+            function createPlot() {
+                if (!accuracySlider || !precisionSlider) return; // 检查滑块是否存在
+                const initialAccuracy = parseFloat(accuracySlider.value);
+                const initialPrecision = parseFloat(precisionSlider.value);
+                const initialPoints = generatePoints(initialAccuracy, initialPrecision);
+
+                const trace = {
+                    x: initialPoints.x,
+                    y: initialPoints.y,
+                    mode: 'markers',
+                    type: 'scatter',
+                    name: '测量点',
+                    marker: { color: 'rgba(255, 0, 0, 0.7)', size: 8 }
+                };
+
+                const layout = {
+                    title: {
+                        text: '正确度 (Accuracy) vs 精密度 (Precision)',
+                        font: { size: 16 }
+                    },
+                    xaxis: {
+                        range: [-PLOT_RANGE, PLOT_RANGE],
+                        zeroline: false,
+                        showgrid: true, // 显示网格线
+                        gridcolor: '#eee'
+                    },
+                    yaxis: {
+                        range: [-PLOT_RANGE, PLOT_RANGE],
+                        zeroline: false,
+                        scaleanchor: "x",
+                        scaleratio: 1,
+                        showgrid: true, // 显示网格线
+                        gridcolor: '#eee'
+                    },
+                    showlegend: false,
+                    margin: { l: 25, r: 25, t: 60, b: 30 }, // 适合移动端的边距
+                    shapes: [ // 靶子和十字线
+                        { type: 'circle', xref: 'x', yref: 'y', x0: -8, y0: -8, x1: 8, y1: 8, fillcolor: 'rgba(173, 216, 230, 0.3)', line: { color: 'lightblue' } },
+                        { type: 'circle', xref: 'x', yref: 'y', x0: -6, y0: -6, x1: 6, y1: 6, fillcolor: 'rgba(255, 255, 0, 0.3)', line: { color: 'yellow' } },
+                        { type: 'circle', xref: 'x', yref: 'y', x0: -3, y0: -3, x1: 3, y1: 3, fillcolor: 'rgba(255, 160, 122, 0.3)', line: { color: 'lightsalmon' } },
+                        { type: 'circle', xref: 'x', yref: 'y', x0: -1, y0: -1, x1: 1, y1: 1, fillcolor: 'rgba(255, 69, 0, 0.4)', line: { color: 'orangered' } },
+                        { type: 'line', xref: 'x', yref: 'paper', x0: 0, y0: 0, x1: 0, y1: 1, line: { color: 'grey', width: 1, dash: 'dot' } },
+                        { type: 'line', xref: 'paper', yref: 'y', x0: 0, y0: 0, x1: 1, y1: 0, line: { color: 'grey', width: 1, dash: 'dot' } }
+                    ]
+                };
+
+                // 确保 Plotly 和 div 存在
+                if (plotDiv && typeof Plotly !== 'undefined') {
+                     Plotly.newPlot(plotDiv, [trace], layout, {
+                        responsive: true,
+                        displayModeBar: false // 隐藏工具栏
+                    });
+                } else {
+                    console.error("无法初始化 Plotly：绘图 div 或 Plotly 库未找到。");
+                }
+            }
+
+            // --- 绑定事件监听器 ---
+            if (accuracySlider) accuracySlider.addEventListener('input', updatePlot);
+            if (precisionSlider) precisionSlider.addEventListener('input', updatePlot);
+
+            // 按钮事件监听
+            if (btnGoodGood) btnGoodGood.addEventListener('click', () => { if(accuracySlider) accuracySlider.value = 1.0; if(precisionSlider) precisionSlider.value = 1.0; updatePlot(); });
+            if (btnGoodPoor) btnGoodPoor.addEventListener('click', () => { if(accuracySlider) accuracySlider.value = 0.0; if(precisionSlider) precisionSlider.value = 1.0; updatePlot(); });
+            if (btnPoorGood) btnPoorGood.addEventListener('click', () => { if(accuracySlider) accuracySlider.value = 1.0; if(precisionSlider) precisionSlider.value = 0.0; updatePlot(); });
+            if (btnPoorPoor) btnPoorPoor.addEventListener('click', () => { if(accuracySlider) accuracySlider.value = 0.0; if(precisionSlider) precisionSlider.value = 0.0; updatePlot(); });
+
+            // --- 初始化 ---
+            createPlot(); // 创建初始图表
+
+            // 更新初始显示的滑块数值
+            if (accuracyValueSpan && accuracySlider) accuracyValueSpan.textContent = parseFloat(accuracySlider.value).toFixed(2);
+            if (precisionValueSpan && precisionSlider) precisionValueSpan.textContent = parseFloat(precisionSlider.value).toFixed(2);
+
+        }); // 结束 DOMContentLoaded 监听器
     </script>
 
 </body>
