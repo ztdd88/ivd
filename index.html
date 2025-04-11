@@ -17,22 +17,53 @@
             </div>
             <ul class="nav-list">
                 <li>
+                    <span class="nav-parent">核心概念</span>
                     <ul class="sub-nav-list">
-                    <a href="#" class="nav-link active" data-src="https://ztdd88.github.io/ivd/ald_BootCDN.html">
-                        特异性与灵敏度分析
-                    </a>
-                    </li>
-            </ul>
-                <li>
-                    <a href="#" class="nav-link" data-src="about:blank">
-                        (示例链接 2)
-                    </a>
+                        <li>
+                            <a href="#" class="nav-link active" data-src="https://ztdd88.github.io/ivd/ald_BootCDN.html">
+                                特异性与灵敏度分析
+                            </a>
+                        </li>
+                        </ul>
                 </li>
+
                 <li>
-                    <a href="#" class="nav-link" data-src="about:blank">
-                        (示例链接 3)
-                    </a>
+                    <span class="nav-parent">父2目录</span>
+                    <ul class="sub-nav-list">
+                        <li>
+                            <a href="#" class="nav-link" data-src="placeholder2_1.html"> 子2目录1
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link" data-src="placeholder2_2.html"> 子2目录2
+                            </a>
+                        </li>
+                    </ul>
                 </li>
+
+                <li>
+                    <span class="nav-parent">父3目录</span>
+                    <ul class="sub-nav-list">
+                        <li>
+                            <a href="#" class="nav-link" data-src="placeholder3_1.html"> 子3目录1
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link" data-src="placeholder3_2.html"> 子3目录2
+                            </a>
+                        </li>
+                        <li>
+                            <span class="nav-parent">子3目录3 (更深层父)</span>
+                            <ul class="sub-nav-list deeper"> <li>
+                                     <a href="#" class="nav-link" data-src="placeholder3_3_1.html">
+                                        孙子目录1
+                                     </a>
+                                 </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+
             </ul>
         </nav>
         <main class="content">
@@ -41,38 +72,36 @@
     </div>
 
     <script>
+        // JavaScript 部分保持不变，它只会处理带有 data-src 的 .nav-link
         document.addEventListener('DOMContentLoaded', function() {
-            const navLinks = document.querySelectorAll('.nav-link');
+            const navLinks = document.querySelectorAll('.nav-link[data-src]'); // 只选择有 data-src 的链接
             const iframe = document.getElementById('content-frame');
-            const initialActiveLink = document.querySelector('.nav-link.active');
-
-            // 设置 iframe 的初始页面 (如果初始 active 链接存在)
-            // if (initialActiveLink && initialActiveLink.dataset.src) {
-            //     iframe.src = initialActiveLink.dataset.src;
-            // } else {
-            //     // 如果没有初始 active 链接，可以设置一个默认页面或保持空白
-            //     iframe.src = 'about:blank'; // 或者 'welcome.html' 等
-            // }
 
             navLinks.forEach(link => {
                 link.addEventListener('click', function(event) {
                     event.preventDefault(); // 阻止链接默认跳转行为
 
-                    // 获取目标 URL
                     const targetSrc = this.dataset.src;
                     if (targetSrc && iframe.src !== targetSrc) {
-                         // 只有当目标 URL 不同时才加载
                         iframe.src = targetSrc;
                     }
 
-
-                    // 更新激活状态样式
-                    navLinks.forEach(innerLink => innerLink.classList.remove('active'));
+                    // 更新激活状态样式 (移除所有，再添加当前)
+                    document.querySelectorAll('.nav-link').forEach(innerLink => innerLink.classList.remove('active'));
                     this.classList.add('active');
-
-                    // (可选) 处理子菜单的展开/折叠逻辑可以在这里添加
                 });
             });
+
+             // 确保初始加载时，默认激活的链接状态正确
+             const initialActiveLink = document.querySelector('.nav-link.active');
+             if (initialActiveLink && initialActiveLink.dataset.src) {
+                 // (可选) 如果iframe的初始src不是第一个active链接，可以在这里设置
+                 // iframe.src = initialActiveLink.dataset.src;
+             } else if (navLinks.length > 0) {
+                 // 如果没有预设 active，默认激活第一个链接并加载
+                 // navLinks[0].classList.add('active');
+                 // iframe.src = navLinks[0].dataset.src;
+             }
         });
     </script>
 </body>

@@ -120,3 +120,34 @@ html, body {
     height: 100%;
     border: none; /* 移除边框 */
 }
+
+/* ... 你现有的 style.css 内容 ... */
+
+/* 父目录 (分类标题) 样式 */
+.nav-parent {
+    display: block;
+    padding: 12px 20px 8px 20px; /* 调整内边距，与其他链接略不同 */
+    color: #566573; /* 颜色比链接稍深或稍灰 */
+    font-weight: 500; /* 字重稍粗 */
+    font-size: 0.9em; /* 字号稍小 */
+    text-transform: uppercase; /* (可选) 字母大写 */
+    letter-spacing: 0.5px; /* (可选) 增加字间距 */
+    cursor: default; /* 表明不可点击 */
+    margin-top: 10px; /* 与上一个目录组的间距 */
+}
+
+/* 第一个父目录无上边距 */
+.nav-list > li:first-child > .nav-parent {
+    margin-top: 0;
+}
+
+/* 更深层级的子菜单缩进 (如果需要) */
+.sub-nav-list.deeper {
+    padding-left: 35px; /* 增加缩进 */
+}
+.sub-nav-list.deeper .nav-link {
+     padding-left: 45px; /* 对应调整链接缩进 */
+}
+
+
+/* ... 你现有的 style.css 其他内容 ... */
