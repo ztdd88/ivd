@@ -12,25 +12,53 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 15px; /* 桌面端左右下内边距 */
-            padding-top: 15px; /* 桌面端顶部内边距 */
+            padding: 20px; /* 页面基本内边距 */
+            padding-top: 70px; /* ** 为返回按钮留出空间 ** */
             background-color: #f8f9fa;
             margin: 0;
             box-sizing: border-box;
+            position: relative; /* 为了返回按钮的绝对定位 */
+            min-height: 100vh;
         }
+        /* --- 返回按钮样式 --- */
+        .back-button {
+            position: absolute; /* 相对于 body 定位 */
+            top: 15px;
+            left: 15px;
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #34495e;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 13px;
+            text-decoration: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: background-color 0.2s ease;
+        }
+        .back-button:hover {
+            background-color: rgba(255, 255, 255, 1);
+        }
+
+        /* 控件区域 */
         .controls {
             display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
-            margin-bottom: 20px; /* 桌面端下外边距 */
-            padding: 12px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            gap: 12px 20px; width: 100%; max-width: 700px; box-sizing: border-box;
+            margin-bottom: 20px; padding: 12px; background-color: #fff; border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); gap: 12px 20px; width: 100%; max-width: 700px;
+            box-sizing: border-box;
         }
+        /* ... control-group, label, input, output 样式不变 ... */
         .control-group { display: flex; align-items: center; gap: 8px; }
         .control-group label { font-weight: 500; color: #555; width: 60px; text-align: right; font-size: 13px; }
         .control-group input[type="range"] { width: 130px; cursor: pointer; }
         .control-group output { font-weight: bold; color: #333; min-width: 30px; text-align: left; font-size: 13px; }
+
+        /* 按钮容器和按钮样式 (不变) */
         .buttons { display: grid; grid-template-columns: repeat(2, auto); gap: 8px 12px; justify-content: center; }
         .buttons button { padding: 5px 10px; font-size: 11px; border: 1px solid #ccc; border-radius: 4px; background-color: #f0f0f0; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; white-space: nowrap; }
         .buttons button:hover { background-color: #e0e0e0; border-color: #bbb; }
+
+        /* 绘图区域 */
         #plot {
             width: 95%; max-width: 550px; height: auto; aspect-ratio: 1 / 1; background-color: #fff;
             border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin: 0 auto;
@@ -39,12 +67,18 @@
         /* --- 移动端响应式调整 --- */
         @media (max-width: 768px) {
             body {
-                padding: 10px; /* 移动端左右下内边距 */
-                /* ** 确认 body 没有 padding-top ** */
+                padding: 10px; /* 左右下内边距 */
+                padding-top: 65px; /* ** 调整为返回按钮留空间 ** */
+            }
+            .back-button {
+                top: 10px;
+                left: 10px;
+                padding: 5px 10px;
+                font-size: 12px;
             }
             .controls {
                 flex-direction: column; align-items: stretch; gap: 15px; padding: 10px;
-                margin-bottom: 10px; /* ** 保持减小的下外边距 ** */
+                margin-bottom: 10px; /* 保持减小的下外边距 */
             }
             .control-group { flex-direction: column; align-items: flex-start; width: 100%; gap: 5px; }
             .control-group label { width: auto; text-align: left; margin-bottom: 3px; }
@@ -54,31 +88,35 @@
             .buttons button { width: 100%; font-size: 11px; padding: 8px 5px; }
             #plot {
                 width: 100%; max-width: none; height: auto; min-height: 300px;
-                 /* ** 确保 #plot 没有 margin-top ** */
             }
         }
     </style>
 </head>
 <body>
+    <a href="index.html" class="back-button">&laquo; 返回主页</a>
 
     <div class="controls">...</div>
     <div id="plot"></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // ... 所有 JS 代码保持不变 ...
+            // ... JS 代码与上一个修复空白问题的版本完全一致 ...
+            // 确保 createPlot 中的 Plotly.newPlot 使用了 displayModeBar: false
              function createPlot() {
-                 // ... layout (包括 shapes) ...
+                 // ... 获取 initial 数据 ...
+                 const trace = { /* ... */ };
+                 const layout = { /* ... */ };
+
                  if (plotDiv && typeof Plotly !== 'undefined') {
                     Plotly.newPlot(plotDiv, [trace], layout, {
                         responsive: true,
                         displayModeBar: false // 保持隐藏
                     });
-                } else { console.error("无法初始化 Plotly"); }
+                } // ...
             }
             // ...
             createPlot();
-            // ...
+             // ...
         });
     </script>
 

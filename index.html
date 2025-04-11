@@ -6,136 +6,46 @@
     <title>IVD 数据可视化平台</title>
     <link rel="stylesheet" href="style.css"> <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <button id="menu-toggle" class="menu-toggle">☰</button>
-    <div id="overlay" class="overlay"></div>
+    <header class="landing-header">
+        <h1>IVD 数据可视化平台</h1>
+        <p>交互式探索与分析工具</p>
+    </header>
 
-    <div class="container">
-        <nav class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h2>导航目录</h2>
+    <main class="landing-container">
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-content">
+                    <h3>特异性与灵敏度分析</h3>
+                    <p>交互式探索诊断阈值对灵敏度、特异性的影响及 ROC 曲线。</p>
+                </div>
+                <a href="ald_BootCDN.html" class="card-link">进入 &raquo;</a>
             </div>
-            <ul class="nav-list">
-                <li>
-                    <span class="nav-parent">核心概念</span>
-                    <ul class="sub-nav-list">
-                        <li>
-                            <a href="#" class="nav-link active" data-src="ald_BootCDN.html">
-                                特异性与灵敏度分析
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="nav-link" data-src="accuracy_precision.html">
-                                正确度与精密度演示
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                <li>
-                    <span class="nav-parent">父2目录</span>
-                    <ul class="sub-nav-list">
-                        <li><a href="#" class="nav-link" data-src="placeholder2_1.html">子2目录1</a></li>
-                        <li><a href="#" class="nav-link" data-src="placeholder2_2.html">子2目录2</a></li>
-                    </ul>
-                </li>
-                <li>
-                    <span class="nav-parent">父3目录</span>
-                    <ul class="sub-nav-list">
-                        <li><a href="#" class="nav-link" data-src="placeholder3_1.html">子3目录1</a></li>
-                        <li><a href="#" class="nav-link" data-src="placeholder3_2.html">子3目录2</a></li>
-                         <li>
-                            <span class="nav-parent">子3目录3 (更深层父)</span>
-                            <ul class="sub-nav-list deeper">
-                                 <li><a href="#" class="nav-link" data-src="placeholder3_3_1.html">孙子目录1</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </nav>
-        <main class="content">
-            <iframe id="content-frame" src="ald_BootCDN.html" frameborder="0" allowfullscreen></iframe>
-        </main>
-    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const contentFrame = document.getElementById('content-frame');
-            const menuToggle = document.getElementById('menu-toggle');
-            const overlay = document.getElementById('overlay');
-            // 只选择真正需要加载内容的链接
-            const navLinks = document.querySelectorAll('.nav-link[data-src]');
+            <div class="card">
+                 <div class="card-content">
+                    <h3>正确度与精密度演示</h3>
+                    <p>通过靶图模拟，直观理解准确度 (Accuracy) 与精密度 (Precision) 的概念。</p>
+                 </div>
+                <a href="accuracy_precision.html" class="card-link">进入 &raquo;</a>
+            </div>
 
-            // --- 菜单开关逻辑 ---
-            function openSidebar() {
-                sidebar.classList.add('open');
-                overlay.classList.add('open');
-            }
+            <div class="card placeholder">
+                 <div class="card-content">
+                    <h3>敬请期待...</h3>
+                    <p>未来将添加更多可视化分析工具。</p>
+                 </div>
+                <a href="#" class="card-link disabled">进入 &raquo;</a>
+            </div>
 
-            function closeSidebar() {
-                sidebar.classList.remove('open');
-                overlay.classList.remove('open');
-            }
+             </div>
+    </main>
 
-            menuToggle.addEventListener('click', function(event) {
-                event.stopPropagation();
-                if (sidebar.classList.contains('open')) {
-                    closeSidebar();
-                } else {
-                    openSidebar();
-                }
-            });
+    <footer class="landing-footer">
+        <p>&copy; 2025 [你的名字或组织]. All Rights Reserved.</p>
+    </footer>
 
-            overlay.addEventListener('click', closeSidebar);
-
-            // --- 链接点击逻辑 ---
-            navLinks.forEach(link => {
-                link.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    const targetSrc = this.dataset.src;
-
-                    // 检查 URL 是否真的需要改变，以及是否非空/占位符
-                    if (targetSrc && targetSrc !== 'about:blank' && !targetSrc.startsWith('placeholder') && contentFrame.src !== targetSrc) {
-                        contentFrame.src = targetSrc;
-                    } else if (!targetSrc || targetSrc === 'about:blank' || targetSrc.startsWith('placeholder')) {
-                         console.log("Placeholder or empty link clicked."); // 可以给用户提示或什么都不做
-                         // 可以选择加载一个提示页面: contentFrame.src = 'empty.html';
-                    }
-
-
-                    // 更新激活状态
-                    navLinks.forEach(innerLink => innerLink.classList.remove('active'));
-                    this.classList.add('active');
-
-                    // 点击链接后关闭侧边栏 (在移动端视图下)
-                    if (window.innerWidth <= 768) { // 与 CSS 媒体查询断点一致
-                       closeSidebar();
-                    }
-                });
-            });
-
-             // 处理初始加载页面对应的激活状态
-             const initialSrc = contentFrame.getAttribute('src');
-             if (initialSrc) {
-                 let foundActive = false;
-                 navLinks.forEach(link => {
-                     if (link.dataset.src === initialSrc) {
-                         link.classList.add('active');
-                         foundActive = true;
-                     } else {
-                         link.classList.remove('active');
-                     }
-                 });
-                 // 如果 iframe 的初始 src 与任何链接都不匹配，则移除所有 active 类
-                 if (!foundActive) {
-                      navLinks.forEach(link => link.classList.remove('active'));
-                 }
-             }
-
-        });
-    </script>
 </body>
 </html>

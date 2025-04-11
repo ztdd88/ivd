@@ -1,124 +1,161 @@
-/* style.css - 完整版 V4 */
+/* style.css - 用于新的 index.html */
 
-/* --- 1. 基本重置和全局样式 --- */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { height: 100%; font-family: 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #333; background-color: #f4f7f9; overflow: hidden; }
+/* 基本重置和全局样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-/* --- 2. 汉堡包按钮样式 --- */
-.menu-toggle { /* ... 样式不变 ... */ }
+html {
+    scroll-behavior: smooth; /* 平滑滚动效果 */
+}
 
-/* --- 3. 遮罩层样式 --- */
-.overlay { /* ... 样式不变 ... */ }
-.overlay.open { /* ... 样式不变 ... */ }
-
-/* --- 4. 容器布局 --- */
-.container { display: flex; height: 100vh; }
-
-/* --- 5. 侧边栏样式 --- */
-.sidebar {
-    width: 240px;
-    flex-shrink: 0;
-    background-color: #ffffff;
-    border-right: 1px solid #e0e0e0;
-    padding-top: 20px;
-    padding-bottom: 20px;
+body {
+    font-family: 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px; /* 基础字号调大一点 */
+    line-height: 1.7;
+    color: #444; /* 深灰色文字 */
+    background-color: #f0f2f5; /* 稍深的背景色 */
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
-    transition: transform 0.3s ease-in-out;
-    z-index: 1000;
+    min-height: 100vh;
 }
-.sidebar-header { /* ... 样式不变 ... */ }
-.sidebar-header h2 { /* ... 样式不变 ... */ }
-.nav-list { /* ... 样式不变 ... */ }
-.nav-list li { /* ... 样式不变 ... */ }
 
-/* 父目录 (分类标题) 样式 */
-.nav-parent {
+/* 页眉样式 */
+.landing-header {
+    background: linear-gradient(135deg, #4a69bd, #6a89cc); /* 渐变背景 */
+    color: white;
+    padding: 40px 20px 30px 20px; /* 增加内边距 */
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.landing-header h1 {
+    font-size: 2.5em; /* 大标题 */
+    font-weight: 700; /* 粗体 */
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.landing-header p {
+    font-size: 1.1em;
+    font-weight: 300; /* 细体 */
+    opacity: 0.9;
+}
+
+/* 主内容容器 */
+.landing-container {
+    width: 100%;
+    max-width: 1200px; /* 限制最大宽度 */
+    margin: 40px auto; /* 上下外边距，左右自动居中 */
+    padding: 0 20px; /* 左右内边距 */
+    flex-grow: 1; /* 让内容区占据剩余空间 */
+}
+
+/* 卡片网格布局 */
+.card-grid {
+    display: grid;
+    /* 响应式网格：自动调整列数，最小宽度280px */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px; /* 网格间距 */
+}
+
+/* 卡片样式 */
+.card {
+    background-color: #ffffff;
+    border-radius: 10px; /* 更大圆角 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* 稍明显阴影 */
+    overflow: hidden; /* 防止内容溢出 */
+    display: flex;
+    flex-direction: column; /* 内容垂直排列 */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px); /* 鼠标悬停时轻微上移 */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); /* 悬停时阴影加深 */
+}
+
+.card-content {
+    padding: 25px; /* 卡片内容内边距 */
+    flex-grow: 1; /* 让内容区占据卡片剩余空间 */
+}
+
+.card h3 {
+    font-size: 1.4em;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.card p {
+    font-size: 0.95em;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+/* 卡片链接/按钮样式 */
+.card-link {
     display: block;
-    padding: 12px 20px 8px 20px;
-    color: #566573;
+    background-color: #5a7dcb; /* 主题色 */
+    color: white;
+    text-align: center;
+    padding: 12px 20px;
+    text-decoration: none;
     font-weight: 500;
     font-size: 0.9em;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: default;
-    margin-top: 10px;
-    /* ** 新增：允许文本换行 ** */
-    white-space: normal;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-.nav-list > li:first-child > .nav-parent { margin-top: 0; }
-
-/* 导航链接样式 */
-.nav-link {
-    display: block;
-    padding: 10px 20px;
-    text-decoration: none;
-    color: #34495e;
-    font-weight: 400;
-    border-left: 3px solid transparent;
-    transition: background-color 0.2s ease, color 0.2s ease, border-left-color 0.2s ease;
-    /* ** 新增：允许文本换行 ** */
-    white-space: normal;
-    word-wrap: break-word; /* 兼容性 */
-    overflow-wrap: break-word; /* 标准属性 */
-}
-.nav-link:hover { /* ... 样式不变 ... */ }
-.nav-link.active { /* ... 样式不变 ... */ }
-
-/* 子菜单样式 */
-.sub-nav-list { /* ... 样式不变 ... */ }
-.sub-nav-list .nav-link { /* ... 样式不变 ... */ }
-.sub-nav-list .nav-link:hover { /* ... 样式不变 ... */ }
-.sub-nav-list .nav-link.active { /* ... 样式不变 ... */ }
-.sub-nav-list.deeper { /* ... 样式不变 ... */ }
-.sub-nav-list.deeper .nav-link { /* ... 样式不变 ... */ }
-
-/* --- 6. 内容区域样式 --- */
-.content {
-    flex-grow: 1;
-    background-color: #ffffff;
-    padding: 0; /* ** 桌面端无内边距 ** */
-    overflow: hidden;
-    position: relative; /* 保持相对定位 */
+    border-top: 1px solid #e0e0e0; /* 顶部 subtle 分隔线 */
+    transition: background-color 0.2s ease;
+    margin-top: auto; /* 将按钮推到底部 */
 }
 
-/* --- 7. Iframe 样式 --- */
-#content-frame {
-    display: block;
-    width: 100%;
-    height: 100%; /* ** 保持 100% 高度 ** */
-    border: none;
+.card-link:hover {
+    background-color: #4a69bd; /* 悬停颜色加深 */
 }
 
-/* --- 8. 媒体查询：移动端样式 --- */
-@media (max-width: 768px) {
-    .menu-toggle {
-        display: block; /* 显示汉堡包按钮 */
-    }
-    .sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        height: 100%;
-        transform: translateX(-100%); /* 默认隐藏 */
-        /* ... 其他 fixed 样式不变 ... */
-    }
-    .sidebar.open {
-        transform: translateX(0); /* 显示 */
-    }
+/* 占位符卡片样式 */
+.card.placeholder {
+    opacity: 0.7;
+    background-color: #f8f8f8;
+}
 
-    /* ** 给内容容器添加顶部内边距，为汉堡按钮留空间 ** */
-    .content {
-        padding-top: 60px; /* (可调整) */
-    }
+.card.placeholder .card-link {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+.card.placeholder .card-link:hover {
+    background-color: #ccc;
+}
+.card.placeholder .card-link.disabled {
+    pointer-events: none; /* 禁用点击 */
+}
 
-    /* ** 重要：调整 iframe 高度以适应容器的 padding-top ** */
-    /* 如果 iframe 内容仍被截断或高度不对，可能需要取消注释这行 */
-    /* #content-frame { */
-    /* height: calc(100% - 60px); */ /* (与上面的 padding-top 值一致) */
-    /* } */
-    /* 先不加这行，让 iframe 默认的 height: 100% 尝试在 padded container 内工作 */
+
+/* 页脚样式 */
+.landing-footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px; /* 与上方内容间距 */
+    color: #888;
+    font-size: 0.85em;
+    background-color: #e9ebee; /* 页脚背景色 */
+    border-top: 1px solid #d0d3d6;
+}
+
+/* 简单的响应式调整 */
+@media (max-width: 600px) {
+    .landing-header h1 {
+        font-size: 2em;
+    }
+    .landing-header p {
+        font-size: 1em;
+    }
+    .card-grid {
+        gap: 20px;
+    }
+    .card h3 {
+        font-size: 1.2em;
+    }
 }
