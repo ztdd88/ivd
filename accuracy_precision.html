@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正确度与精密度演示</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/plotly.js/2.35.3/plotly-cartesian.min.js" charset="utf-8"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            margin: 0;
+            height: calc(100vh - 40px); /* 考虑 body padding */
+            box-sizing: border-box;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap; /* 允许换行 */
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            gap: 15px 25px; /* 行间距和列间距 */
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .control-group label {
+            font-weight: 500;
+            color: #555;
+            width: 60px; /* 固定标签宽度 */
+            text-align: right;
+        }
+        .control-group input[type="range"] {
+            width: 150px;
+            cursor: pointer;
+        }
+        .control-group output {
+            font-weight: bold;
+            color: #333;
+            min-width: 30px; /* 保证数字显示宽度 */
+            text-align: left;
+        }
+        .buttons button {
+            padding: 8px 15px;
+            font-size: 13px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+        .buttons button:hover {
+            background-color: #e0e0e0;
+            border-color: #bbb;
+        }
+        #plot {
+            width: 90%;
+            max-width: 600px; /* 限制最大宽度 */
+            height: auto;
+            aspect-ratio: 1 / 1; /* 保持正方形 */
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <div class="control-group">
+            <label for="accuracySlider">正确度:</label>
+            <input type="range" id="accuracySlider" min="0" max="1" step="0.01" value="0.8">
+            <output id="accuracyValue">0.8</output>
+        </div>
+        <div class="control-group">
+            <label for="precisionSlider">精密度:</label>
+            <input type="range" id="precisionSlider" min="0" max="1" step="0.01" value="0.8">
+            <output id="precisionValue">0.8</output>
+        </div>
+        <div class="buttons">
+            <button id="btnGoodGood">精确且准确</button>
+            <button id="btnGoodPoor">精确但不准确</button>
+            <button id="btnPoorGood">准确但不精确</button>
+            <button id="btnPoorPoor">不精确不准确</button>
+        </div>
+    </div>
+
+    <div id="plot"></div>
+
+    <script>
+        const plotDiv = document.getElementById('plot');
+        const accuracySlider = document.getElementById('accuracySlider');
+        const precisionSlider = document.getElementById('precisionSlider');
+        const accuracyValueSpan = document.getElementById('accuracyValue');
+        const precisionValueSpan = document.getElementById('precisionValue');
+        const btnGoodGood = document.getElementById('btnGoodGood');
+        const btnGoodPoor = document.getElementById('btnGoodPoor');
+        const btnPoorGood = document.getElementById('btnPoorGood');
+        const btnPoorPoor = document.getElementById('btnPoorPoor');
+
+        const MAX_OFFSET = 4.0; // "不准确"时，点群中心距离靶心的最大偏移量
+        const MAX_STD_DEV = 3.0; // "不精确"时，点群的最大标准差
+        const MIN_STD_DEV = 0.3; // "精确"时的最小标准差
+        const NUM_POINTS = 30;   // 每次射击的点数
+        const PLOT_RANGE = 10;   // 靶面范围 (-10 到 10)
+
+        // Box-Muller transform to generate standard normal random numbers
+        function randn_bm() {
+            let u = 0, v = 0;
+            while (u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+            while (v === 0) v = Math.random();
+            return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+        }
+
+        // Function to generate points
+        function generatePoints(accuracy, precision) {
+            // Map slider values (0-1) to parameters
+            // Accuracy: 1 = good (offset 0), 0 = poor (offset MAX_OFFSET)
+            // Precision: 1 = good (stdDev MIN_STD_DEV), 0 = poor (stdDev MAX_STD_DEV)
+            const meanOffsetDistance = MAX_OFFSET * (1 - accuracy);
+            // Place the mean offset along 45 degree for simplicity
+            const meanX = meanOffsetDistance / Math.sqrt(2);
+            const meanY = meanOffsetDistance / Math.sqrt(2);
+
+            const stdDev = MAX_STD_DEV - precision * (MAX_STD_DEV - MIN_STD_DEV);
+
+            const xPoints = [];
+            const yPoints = [];
+            for (let i = 0; i < NUM_POINTS; i++) {
+                xPoints.push(randn_bm() * stdDev + meanX);
+                yPoints.push(randn_bm() * stdDev + meanY);
+            }
+            return { x: xPoints, y: yPoints };
+        }
+
+        // Function to update the plot
+        function updatePlot() {
+            const accuracy = parseFloat(accuracySlider.value);
+            const precision = parseFloat(precisionSlider.value);
+
+            accuracyValueSpan.textContent = accuracy.toFixed(2);
+            precisionValueSpan.textContent = precision.toFixed(2);
+
+            const points = generatePoints(accuracy, precision);
+
+            Plotly.restyle(plotDiv, {
+                x: [points.x],
+                y: [points.y]
+            }, [0]); // Update the first trace (index 0)
+        }
+
+        // Initial plot setup
+        function createPlot() {
+            const initialAccuracy = parseFloat(accuracySlider.value);
+            const initialPrecision = parseFloat(precisionSlider.value);
+            const initialPoints = generatePoints(initialAccuracy, initialPrecision);
+
+            const trace = {
+                x: initialPoints.x,
+                y: initialPoints.y,
+                mode: 'markers',
+                type: 'scatter',
+                name: '测量点',
+                marker: {
+                    color: 'rgba(255, 0, 0, 0.7)', // Semi-transparent red
+                    size: 8
+                }
+            };
+
+            const layout = {
+                title: '正确度 (Accuracy) vs 精密度 (Precision)',
+                xaxis: {
+                    range: [-PLOT_RANGE, PLOT_RANGE],
+                    zeroline: false,
+                    showgrid: false,
+                    // visible: false // 可以取消注释隐藏坐标轴
+                },
+                yaxis: {
+                    range: [-PLOT_RANGE, PLOT_RANGE],
+                    zeroline: false,
+                    scaleanchor: "x", // Keep aspect ratio 1:1
+                    scaleratio: 1,
+                    showgrid: false,
+                    // visible: false // 可以取消注释隐藏坐标轴
+                },
+                showlegend: false,
+                // Aspect ratio settings (can also be controlled by CSS)
+                // width: 500, // Set fixed size or use CSS
+                // height: 500,
+                margin: { l: 40, r: 40, t: 60, b: 40 }, // Adjust margins
+                shapes: [
+                    // Target circles (from outer to inner)
+                    { type: 'circle', xref: 'x', yref: 'y', x0: -8, y0: -8, x1: 8, y1: 8, fillcolor: 'rgba(173, 216, 230, 0.3)', line: { color: 'lightblue' } }, // Light blue outer
+                    { type: 'circle', xref: 'x', yref: 'y', x0: -6, y0: -6, x1: 6, y1: 6, fillcolor: 'rgba(255, 255, 0, 0.3)', line: { color: 'yellow' } }, // Yellow middle
+                    { type: 'circle', xref: 'x', yref: 'y', x0: -3, y0: -3, x1: 3, y1: 3, fillcolor: 'rgba(255, 160, 122, 0.3)', line: { color: 'lightsalmon' } }, // Light Salmon inner
+                    { type: 'circle', xref: 'x', yref: 'y', x0: -1, y0: -1, x1: 1, y1: 1, fillcolor: 'rgba(255, 69, 0, 0.4)', line: { color: 'orangered' } }, // OrangeRed bullseye
+
+                    // Crosshairs
+                    { type: 'line', xref: 'x', yref: 'paper', x0: 0, y0: 0, x1: 0, y1: 1, line: { color: 'grey', width: 1, dash: 'dot' } },
+                    { type: 'line', xref: 'paper', yref: 'y', x0: 0, y0: 0, x1: 1, y1: 0, line: { color: 'grey', width: 1, dash: 'dot' } }
+                ]
+            };
+
+            Plotly.newPlot(plotDiv, [trace], layout, {responsive: true}); // Use responsive layout
+        }
+
+        // Event listeners
+        accuracySlider.addEventListener('input', updatePlot);
+        precisionSlider.addEventListener('input', updatePlot);
+
+        btnGoodGood.addEventListener('click', () => {
+            accuracySlider.value = 1.0;
+            precisionSlider.value = 1.0;
+            updatePlot(); // Trigger update
+        });
+        btnGoodPoor.addEventListener('click', () => {
+            accuracySlider.value = 0.0; // Poor accuracy = max offset
+            precisionSlider.value = 1.0; // Good precision = min std dev
+            updatePlot();
+        });
+         btnPoorGood.addEventListener('click', () => {
+            accuracySlider.value = 1.0; // Good accuracy = min offset (0)
+            precisionSlider.value = 0.0; // Poor precision = max std dev
+            updatePlot();
+        });
+        btnPoorPoor.addEventListener('click', () => {
+            accuracySlider.value = 0.0;
+            precisionSlider.value = 0.0;
+            updatePlot();
+        });
+
+        // Initial Plot Creation
+        createPlot();
+
+    </script>
+
+</body>
+</html>
