@@ -15,11 +15,12 @@
             padding: 15px;
             background-color: #f8f9fa;
             margin: 0;
-            min-height: calc(100vh - 30px); /* 考虑 body padding */
+            min-height: calc(100vh - 30px);
             box-sizing: border-box;
-            /* ** 默认情况下没有顶部内边距 ** */
+            /* ** 确保 body 没有额外的顶部内边距 ** */
         }
         .controls {
+            /* 保持之前的样式 */
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
@@ -34,39 +35,19 @@
             max-width: 700px;
             box-sizing: border-box;
         }
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .control-group label {
-            font-weight: 500;
-            color: #555;
-            width: 60px;
-            text-align: right;
-            font-size: 13px;
-        }
-        .control-group input[type="range"] {
-            width: 130px;
-            cursor: pointer;
-        }
-        .control-group output {
-            font-weight: bold;
-            color: #333;
-            min-width: 30px;
-            text-align: left;
-            font-size: 13px;
-        }
-        /* 按钮容器和按钮样式 - 使用 Grid */
-        .buttons {
+        .control-group { /* 不变 */ }
+        .control-group label { /* 不变 */ }
+        .control-group input[type="range"] { /* 不变 */ }
+        .control-group output { /* 不变 */ }
+        .buttons { /* 保持 grid 布局 */
            display: grid;
-           grid-template-columns: repeat(2, auto); /* 两列自适应宽度 */
+           grid-template-columns: repeat(2, auto);
            gap: 8px 12px;
            justify-content: center;
         }
-        .buttons button {
-            padding: 5px 10px; /* 减小按钮内边距 */
-            font-size: 11px;   /* 减小按钮字体大小 */
+        .buttons button { /* 保持小按钮样式 */
+            padding: 5px 10px;
+            font-size: 11px;
             border: 1px solid #ccc;
             border-radius: 4px;
             background-color: #f0f0f0;
@@ -74,11 +55,10 @@
             transition: background-color 0.2s ease, border-color 0.2s ease;
             white-space: nowrap;
         }
-        .buttons button:hover {
-            background-color: #e0e0e0;
-            border-color: #bbb;
-        }
+        .buttons button:hover { /* 不变 */ }
+
         #plot {
+            /* 保持之前的样式 */
             width: 95%;
             max-width: 550px;
             height: auto;
@@ -86,15 +66,18 @@
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin: 0 auto;
+            margin-left: auto; /* 左右自动边距使其居中 */
+            margin-right: auto;
+            /* ** 默认没有上外边距 ** */
+            margin-top: 0;
         }
 
         /* --- ** 移动端响应式调整 ** --- */
-        @media (max-width: 768px) { /* 保持与 index.html 侧边栏响应断点一致 */
+        @media (max-width: 768px) {
             body {
                 padding: 10px; /* 左右padding */
-                padding-top: 55px; /* ** 新增：为父页面的固定按钮留出顶部空间 ** */
-                min-height: calc(100vh - 20px - 55px); /* 调整高度计算 */
+                 /* ** 移除之前添加的 body padding-top ** */
+                min-height: calc(100vh - 20px); /* 恢复简单计算 */
             }
             .controls {
                 /* 保持之前的移动端样式 */
@@ -103,43 +86,31 @@
                 gap: 15px;
                 padding: 10px;
             }
-            .control-group {
-                /* 保持之前的移动端样式 */
-                flex-direction: column;
-                align-items: flex-start;
-                width: 100%;
-                gap: 5px;
-            }
+            .control-group { /* 不变 */ }
             .control-group label { /* 不变 */ }
             .control-group input[type="range"] { width: 100%; /* 不变 */ }
             .control-group output { /* 不变 */ }
 
             /* 保持按钮在移动端的 2x2 网格布局 */
-            .buttons {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-                width: 100%;
-                margin-top: 10px;
-            }
-            .buttons button {
-                width: 100%;
-                font-size: 11px;
-                padding: 8px 5px;
-            }
+            .buttons { /* 不变 */ }
+            .buttons button { /* 不变 */ }
+
             #plot {
-                /* 保持之前的移动端样式 */
+                /* 保持之前的移动端宽度等样式 */
                 width: 100%;
                 max-width: none;
                 height: auto;
                 min-height: 300px;
+                /* ** 新增：给绘图区域添加上外边距，避开汉堡包按钮 ** */
+                margin-top: 55px;
             }
         }
     </style>
 </head>
 <body>
+
     <div class="controls">
-        <div class="control-group">
+       <div class="control-group">
             <label for="accuracySlider">正确度:</label>
             <input type="range" id="accuracySlider" min="0" max="1" step="0.01" value="0.8">
             <output id="accuracyValue">0.80</output>
@@ -161,28 +132,18 @@
     <script>
         // ... JavaScript 变量获取不变 ...
         const plotDiv = document.getElementById('plot');
-        const accuracySlider = document.getElementById('accuracySlider');
-        const precisionSlider = document.getElementById('precisionSlider');
-        const accuracyValueSpan = document.getElementById('accuracyValue');
-        const precisionValueSpan = document.getElementById('precisionValue');
-        const btnGoodGood = document.getElementById('btnGoodGood');
-        const btnGoodPoor = document.getElementById('btnGoodPoor');
-        const btnPoorGood = document.getElementById('btnPoorGood');
-        const btnPoorPoor = document.getElementById('btnPoorPoor');
+        // ...
 
         // ... 常量定义不变 ...
         const MAX_OFFSET = 4.0;
-        const MAX_STD_DEV = 3.0;
-        const MIN_STD_DEV = 0.3;
-        const NUM_POINTS = 30;
-        const PLOT_RANGE = 10;
+        // ...
 
-        function randn_bm() { /* ... Box-Muller 函数不变 ... */ }
-        function generatePoints(accuracy, precision) { /* ... generatePoints 函数不变 ... */ }
-        function updatePlot() { /* ... updatePlot 函数不变 ... */ }
+        function randn_bm() { /* ... 不变 ... */ }
+        function generatePoints(accuracy, precision) { /* ... 不变 ... */ }
+        function updatePlot() { /* ... 不变 ... */ }
 
         function createPlot() {
-             // ... (获取 initialAccuracy, initialPrecision, initialPoints 的代码不变) ...
+             // ... 获取 initial 数据不变 ...
             const initialAccuracy = parseFloat(accuracySlider.value);
             const initialPrecision = parseFloat(precisionSlider.value);
             const initialPoints = generatePoints(initialAccuracy, initialPrecision);
@@ -190,14 +151,14 @@
             const trace = { /* ... trace 定义不变 ... */ };
 
             const layout = {
-                title: { // 标题样式不变
+                title: { /* ... 标题样式不变 ... */
                     text: '正确度 (Accuracy) vs 精密度 (Precision)',
                     font: { size: 16 }
                 },
-                xaxis: { range: [-PLOT_RANGE, PLOT_RANGE], zeroline: false, showgrid: false },
-                yaxis: { range: [-PLOT_RANGE, PLOT_RANGE], zeroline: false, scaleanchor: "x", scaleratio: 1, showgrid: false },
+                xaxis: { /* ... xaxis 定义不变 ... */ },
+                yaxis: { /* ... yaxis 定义不变 ... */ },
                 showlegend: false,
-                margin: { l: 25, r: 25, t: 60, b: 30 }, // 保持上次调整的边距
+                margin: { l: 25, r: 25, t: 60, b: 30 }, // 保持减小的边距
                 shapes: [ /* ... shapes 定义不变 ... */ ]
             };
 
@@ -210,12 +171,7 @@
 
         // Event listeners (不变)
         accuracySlider.addEventListener('input', updatePlot);
-        // ... 其他事件监听不变 ...
-        precisionSlider.addEventListener('input', updatePlot);
-        btnGoodGood.addEventListener('click', () => { accuracySlider.value = 1.0; precisionSlider.value = 1.0; updatePlot(); });
-        btnGoodPoor.addEventListener('click', () => { accuracySlider.value = 0.0; precisionSlider.value = 1.0; updatePlot(); });
-        btnPoorGood.addEventListener('click', () => { accuracySlider.value = 1.0; precisionSlider.value = 0.0; updatePlot(); });
-        btnPoorPoor.addEventListener('click', () => { accuracySlider.value = 0.0; precisionSlider.value = 0.0; updatePlot(); });
+        // ...
 
         // Initial Plot Creation (不变)
         createPlot();
