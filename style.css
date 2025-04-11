@@ -213,8 +213,16 @@ html, body {
         transform: translateX(0); /* ** 移入屏幕 ** */
     }
 
-    .content {
-         /* 内容区自动占满宽度，因为侧边栏是 fixed 定位 */
-         /* 如果在侧边栏滑出时，内容区被遮罩层覆盖，这里通常不需要额外调整 */
+       /* ** 新增：给内容容器添加顶部内边距 ** */
+       .content {
+        padding-top: 55px; /* 或者 60px，根据汉堡按钮高度调整 */
     }
+
+    /* (可选) 调整 iframe 高度以适应容器的 padding */
+    /* 如果发现 iframe 底部被截断，可以尝试添加下面这条规则 */
+    /*
+    #content-frame {
+        height: calc(100% - 55px);
+    }
+    */
 }
