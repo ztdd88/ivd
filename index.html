@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IVD 数据可视化平台</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="style.css"> <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
@@ -23,12 +22,12 @@
                     <span class="nav-parent">核心概念</span>
                     <ul class="sub-nav-list">
                         <li>
-                            <a href="#" class="nav-link" data-src="ald_BootCDN.html">
+                            <a href="#" class="nav-link active" data-src="ald_BootCDN.html">
                                 特异性与灵敏度分析
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="nav-link active" data-src="accuracy_precision.html">
+                            <a href="#" class="nav-link" data-src="accuracy_precision.html">
                                 正确度与精密度演示
                             </a>
                         </li>
@@ -57,7 +56,7 @@
             </ul>
         </nav>
         <main class="content">
-            <iframe id="content-frame" src="accuracy_precision.html" frameborder="0" allowfullscreen></iframe>
+            <iframe id="content-frame" src="ald_BootCDN.html" frameborder="0" allowfullscreen></iframe>
         </main>
     </div>
 
@@ -67,7 +66,8 @@
             const contentFrame = document.getElementById('content-frame');
             const menuToggle = document.getElementById('menu-toggle');
             const overlay = document.getElementById('overlay');
-            const navLinks = document.querySelectorAll('.nav-link[data-src]'); // 只选择带 data-src 的链接
+            // 只选择真正需要加载内容的链接
+            const navLinks = document.querySelectorAll('.nav-link[data-src]');
 
             // --- 菜单开关逻辑 ---
             function openSidebar() {
@@ -81,7 +81,7 @@
             }
 
             menuToggle.addEventListener('click', function(event) {
-                event.stopPropagation(); // 防止事件冒泡
+                event.stopPropagation();
                 if (sidebar.classList.contains('open')) {
                     closeSidebar();
                 } else {
@@ -97,24 +97,44 @@
                     event.preventDefault();
                     const targetSrc = this.dataset.src;
 
-                    if (targetSrc && contentFrame.src !== targetSrc) {
+                    // 检查 URL 是否真的需要改变，以及是否非空/占位符
+                    if (targetSrc && targetSrc !== 'about:blank' && !targetSrc.startsWith('placeholder') && contentFrame.src !== targetSrc) {
                         contentFrame.src = targetSrc;
+                    } else if (!targetSrc || targetSrc === 'about:blank' || targetSrc.startsWith('placeholder')) {
+                         console.log("Placeholder or empty link clicked."); // 可以给用户提示或什么都不做
+                         // 可以选择加载一个提示页面: contentFrame.src = 'empty.html';
                     }
+
 
                     // 更新激活状态
                     navLinks.forEach(innerLink => innerLink.classList.remove('active'));
                     this.classList.add('active');
 
-                    // ** 点击链接后关闭侧边栏 (在移动端视图下) **
+                    // 点击链接后关闭侧边栏 (在移动端视图下)
                     if (window.innerWidth <= 768) { // 与 CSS 媒体查询断点一致
                        closeSidebar();
                     }
                 });
             });
 
-             // (可选) 保持初始激活链接的逻辑不变
-             const initialActiveLink = document.querySelector('.nav-link.active');
-             // ... (可选的初始加载逻辑) ...
+             // 处理初始加载页面对应的激活状态
+             const initialSrc = contentFrame.getAttribute('src');
+             if (initialSrc) {
+                 let foundActive = false;
+                 navLinks.forEach(link => {
+                     if (link.dataset.src === initialSrc) {
+                         link.classList.add('active');
+                         foundActive = true;
+                     } else {
+                         link.classList.remove('active');
+                     }
+                 });
+                 // 如果 iframe 的初始 src 与任何链接都不匹配，则移除所有 active 类
+                 if (!foundActive) {
+                      navLinks.forEach(link => link.classList.remove('active'));
+                 }
+             }
+
         });
     </script>
 </body>
