@@ -286,8 +286,8 @@ body {
 
             const layout = {
                 title: '正确度 (Accuracy) vs 精密度 (Precision)',
-                xaxis: { range: [-PLOT_RANGE, PLOT_RANGE], zeroline: false, showgrid: false },
-                yaxis: { range: [-PLOT_RANGE, PLOT_RANGE], zeroline: false, scaleanchor: "x", scaleratio: 1, showgrid: false },
+                xaxis: { range: [-PLOT_RANGE, PLOT_RANGE], zeroline: false, showgrid: false,fixedrange: true },
+                yaxis: { range: [-PLOT_RANGE, PLOT_RANGE], zeroline: false, scaleanchor: "x", scaleratio: 1, showgrid: false,fixedrange: true },
                 showlegend: false,
                  // ** 减小边距以适应移动端 **
                 margin: { l: 25, r: 25, t: 50, b: 30 },
@@ -304,9 +304,11 @@ body {
             // 使用 responsive: true
             Plotly.newPlot(plotDiv, [trace], layout, {
                 responsive: true,
-                displayModeBar: false // ** 添加此行以隐藏工具栏 **
+                displayModeBar: false,
+                scrollZoom: false // ** 添加此行以隐藏工具栏,禁止放大 **
             });
         }
+
 
         // Event listeners (不变)
         accuracySlider.addEventListener('input', updatePlot);
