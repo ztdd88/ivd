@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>室内质控模拟 (SD 分区着色)</title>
+    <script src='https://cdn.bootcdn.net/ajax/libs/plotly.js/2.35.3/plotly.min.js' charset="utf-8"></script>
+    <style>
+        /* --- 基本样式 (使用较大字体) --- */
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            line-height: 1.7;
+            box-sizing: border-box;
+            font-size: 15px; /* 基础字体 */
+            padding-top: 60px; /* 为返回按钮预留空间 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: calc(100vh - 60px);
+        }
+        /* --- 返回按钮样式 --- */
+        .back-button {
+            position: absolute; /* 改回 absolute，随页面滚动 */
+            top: 15px; left: 15px; z-index: 1000; /* z-index 不需太高 */
+            background-color: rgba(255, 255, 255, 0.85); color: #34495e;
+            border: 1px solid #bbb; border-radius: 5px; padding: 8px 15px;
+            font-size: 15px; text-decoration: none;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+            transition: background-color 0.2s ease;
+        }
+        .back-button:hover { background-color: rgba(255, 255, 255, 1); }
+
+        /* --- 控件区域样式 --- */
+        .controls {
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+            margin-top: 10px; margin-bottom: 20px; padding: 15px; background-color: #fff;
+            border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); gap: 15px 25px;
+            width: 95%; max-width: 800px; box-sizing: border-box;
+        }
+        .control-group { display: flex; align-items: center; gap: 10px; }
+        .control-group label { font-weight: 500; color: #555; width: 80px; text-align: right; font-size: 14px; }
+        .control-group input[type="range"] { width: 150px; cursor: pointer; }
+        .control-group output { font-weight: bold; color: #333; min-width: 45px; text-align: left; font-size: 14px; }
+        .buttons { display: grid; grid-template-columns: repeat(2, auto); gap: 8px 12px; justify-content: center; }
+        .buttons button { padding: 6px 12px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; background-color: #f0f0f0; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; white-space: nowrap; }
+        .buttons button:hover { background-color: #e0e0e0; border-color: #bbb; }
+
+        /* --- Plotly 图表容器 --- */
+        #plot {
+            width: 95%;
+            max-width: 900px; /* 可以更宽 */
+            height: 65vh; /* 保持相对高度 */
+            min-height: 400px; /* 最小高度 */
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin: 0 auto 20px auto; /* 居中，底部留白 */
+        }
+
+        /* --- 移动端响应式调整 --- */
+        @media (max-width: 768px) {
+            body { padding-top: 55px; font-size: 14px; }
+            .back-button { padding: 6px 12px; font-size: 14px; }
+            .controls { flex-direction: column; align-items: stretch; gap: 15px; padding: 12px; margin-bottom: 15px;}
+            .control-group { flex-direction: column; align-items: flex-start; width: 100%; gap: 5px; }
+            .control-group label { width: auto; text-align: left; margin-bottom: 3px; }
+            .control-group input[type="range"] { width: 100%; }
+            .control-group output { min-width: 40px; text-align: left; margin-top: 3px; }
+            .buttons { grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 10px; }
+            .buttons button { width: 100%; font-size: 12px; padding: 8px 5px; }
+            #plot { width: 100%; height: 60vh; min-height: 350px; }
+        }
+         @media (max-width: 480px) {
+             .buttons { grid-template-columns: 1fr; }
+         }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-button">&laquo; 返回主页</a>
+
+    <div class="controls">
+         <div class="control-group">
+             <label for="biasSlider">正确度 (Bias):</label>
+             <input type="range" id="biasSlider" min="-3" max="3" step="0.1" value="0">
+             <output id="biasValue">0.0 SD</output>
+         </div>
+         <div class="control-group">
+             <label for="precisionSlider">精密度:</label>
+             <input type="range" id="precisionSlider" min="0" max="1" step="0.01" value="0.8">
+             <output id="precisionValue">0.80</output>
+         </div>
+         <div class="buttons">
+             <button id="btnGoodGood">精确且准确</button>
+             <button id="btnGoodPoor">精确但不准确</button>
+             <button id="btnPoorGood">准确但不精确</button>
+             <button id="btnPoorPoor">不精确不准确</button>
+         </div>
+     </div>
+
+    <div id="plot"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const plotDiv = document.getElementById('plot');
+            const biasSlider = document.getElementById('biasSlider');
+            const precisionSlider = document.getElementById('precisionSlider');
+            const biasValueSpan = document.getElementById('biasValue');
+            const precisionValueSpan = document.getElementById('precisionValue');
+            const btnGoodGood = document.getElementById('btnGoodGood');
+            const btnGoodPoor = document.getElementById('btnGoodPoor');
+            const btnPoorGood = document.getElementById('btnPoorGood');
+            const btnPoorPoor = document.getElementById('btnPoorPoor');
+
+            // --- 参数定义 ---
+            const NUM_DAYS = 30; const TARGET_VALUE = 0; const SD_CONTROL = 1.0;
+            const MAX_STD_DEV = 1.5 * SD_CONTROL; const MIN_STD_DEV = 0.3 * SD_CONTROL;
+            const COLOR_1SD_BG = 'rgba(144, 238, 144, 0.15)'; const COLOR_2SD_BG = 'rgba(255, 255, 224, 0.25)'; const COLOR_3SD_BG = 'rgba(255, 192, 203, 0.2)';
+            const COLOR_1SD_PT = 'darkgreen'; const COLOR_2SD_PT = 'darkgoldenrod'; const COLOR_3SD_PT = 'darkred'; const COLOR_OUTLIER_PT = 'black';
+
+            // --- 数据生成函数 ---
+            function randn_bm(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2.0*Math.log(u))*Math.cos(2.0*Math.PI*v);}
+            function generateQCData(biasLevel,precision){const bias=biasLevel*SD_CONTROL;const stdDev=MAX_STD_DEV-precision*(MAX_STD_DEV-MIN_STD_DEV);const x_days=Array.from({length:NUM_DAYS},(_,i)=>i+1);const y_values=[];for(let i=0;i<NUM_DAYS;i++){y_values.push(TARGET_VALUE+bias+randn_bm()*stdDev);} return {x:x_days,y:y_values};}
+
+            // --- 获取点颜色函数 ---
+            function getPointColor(yValue) {
+                const absDev = Math.abs(yValue - TARGET_VALUE);
+                if (absDev <= 1 * SD_CONTROL) { return COLOR_1SD_PT; }
+                else if (absDev <= 2 * SD_CONTROL) { return COLOR_2SD_PT; }
+                else if (absDev <= 3 * SD_CONTROL) { return COLOR_3SD_PT; }
+                else { return COLOR_OUTLIER_PT; }
+            }
+
+            // --- 更新绘图函数 ---
+            function updatePlot() {
+                if (!biasSlider || !precisionSlider || !plotDiv || typeof Plotly === 'undefined') return;
+                const biasLevel = parseFloat(biasSlider.value);
+                const precision = parseFloat(precisionSlider.value);
+                if (biasValueSpan) biasValueSpan.textContent = biasLevel.toFixed(1) + " SD";
+                if (precisionValueSpan) precisionValueSpan.textContent = precision.toFixed(2);
+                const qcData = generateQCData(biasLevel, precision);
+                const newColorArray = qcData.y.map(yVal => getPointColor(yVal));
+                Plotly.restyle(plotDiv, { y: [qcData.y], 'marker.color': [newColorArray] }, [0]);
+            }
+
+            // --- 初始化绘图函数 ---
+            function createPlot() {
+                if (!biasSlider || !precisionSlider) return;
+                const initialBiasLevel = parseFloat(biasSlider.value);
+                const initialPrecision = parseFloat(precisionSlider.value);
+                const initialData = generateQCData(initialBiasLevel, initialPrecision);
+                const initialColorArray = initialData.y.map(yVal => getPointColor(yVal)); // 计算初始颜色
+
+                const traceData = {
+                    x: initialData.x, y: initialData.y, mode: 'markers+lines', type: 'scatter', name: '测量值',
+                    marker: { color: initialColorArray, size: 7 }, // 使用初始颜色数组
+                    line: { color: 'rgba(52, 152, 219, 0.7)', width: 1.5 }
+                };
+
+                const layout = {
+                    title: { text: '室内质控模拟 (Levey-Jennings 图风格)', font: { size: 18 } },
+                    xaxis: { title: '天数 (Day)', range: [0.5, NUM_DAYS + 0.5], zeroline: false, fixedrange: true, gridcolor: '#eee' },
+                    yaxis: { title: '测量值 (与靶值的偏差)', range: [TARGET_VALUE - 3.5 * SD_CONTROL, TARGET_VALUE + 3.5 * SD_CONTROL], zeroline: true, zerolinecolor: '#555', zerolinewidth: 1.5, fixedrange: true, gridcolor: '#eee' },
+                    showlegend: false,
+                    margin: { l: 60, r: 60, t: 80, b: 50 },
+                    // ** 恢复 shapes 和 annotations **
+                    shapes: [
+                        // Background Zones
+                        { type: 'rect', xref: 'paper', yref: 'y', x0: 0, y0: TARGET_VALUE + 2 * SD_CONTROL, x1: 1, y1: TARGET_VALUE + 3 * SD_CONTROL, fillcolor: COLOR_3SD_BG, line_width: 0, layer: 'below' },
+                        { type: 'rect', xref: 'paper', yref: 'y', x0: 0, y0: TARGET_VALUE - 3 * SD_CONTROL, x1: 1, y1: TARGET_VALUE - 2 * SD_CONTROL, fillcolor: COLOR_3SD_BG, line_width: 0, layer: 'below' },
+                        { type: 'rect', xref: 'paper', yref: 'y', x0: 0, y0: TARGET_VALUE + 1 * SD_CONTROL, x1: 1, y1: TARGET_VALUE + 2 * SD_CONTROL, fillcolor: COLOR_2SD_BG, line_width: 0, layer: 'below' },
+                        { type: 'rect', xref: 'paper', yref: 'y', x0: 0, y0: TARGET_VALUE - 2 * SD_CONTROL, x1: 1, y1: TARGET_VALUE - 1 * SD_CONTROL, fillcolor: COLOR_2SD_BG, line_width: 0, layer: 'below' },
+                        { type: 'rect', xref: 'paper', yref: 'y', x0: 0, y0: TARGET_VALUE - 1 * SD_CONTROL, x1: 1, y1: TARGET_VALUE + 1 * SD_CONTROL, fillcolor: COLOR_1SD_BG, line_width: 0, layer: 'below' },
+                    ],
+                    annotations: [
+                        { xref: 'paper', yref: 'y', x: 1.01, y: TARGET_VALUE + 1 * SD_CONTROL, xanchor: 'left', yanchor: 'middle', text: '+1 SD', showarrow: false, font: {size: 11, color: 'darkgreen'} },
+                        { xref: 'paper', yref: 'y', x: 1.01, y: TARGET_VALUE - 1 * SD_CONTROL, xanchor: 'left', yanchor: 'middle', text: '-1 SD', showarrow: false, font: {size: 11, color: 'darkgreen'} },
+                        { xref: 'paper', yref: 'y', x: 1.01, y: TARGET_VALUE + 2 * SD_CONTROL, xanchor: 'left', yanchor: 'middle', text: '+2 SD', showarrow: false, font: {size: 11, color: 'darkgoldenrod'} },
+                        { xref: 'paper', yref: 'y', x: 1.01, y: TARGET_VALUE - 2 * SD_CONTROL, xanchor: 'left', yanchor: 'middle', text: '-2 SD', showarrow: false, font: {size: 11, color: 'darkgoldenrod'} },
+                        { xref: 'paper', yref: 'y', x: 1.01, y: TARGET_VALUE + 3 * SD_CONTROL, xanchor: 'left', yanchor: 'middle', text: '+3 SD', showarrow: false, font: {size: 11, color: 'darkred'} },
+                        { xref: 'paper', yref: 'y', x: 1.01, y: TARGET_VALUE - 3 * SD_CONTROL, xanchor: 'left', yanchor: 'middle', text: '-3 SD', showarrow: false, font: {size: 11, color: 'darkred'} },
+                        { xref: 'paper', yref: 'y', x: -0.01, y: TARGET_VALUE, xanchor: 'right', yanchor: 'middle', text: 'Target', showarrow: false, font: {size: 11, color: '#2c3e50'} },
+                    ]
+                };
+
+                if (plotDiv && typeof Plotly !== 'undefined') {
+                    Plotly.newPlot(plotDiv, [traceData], layout, {
+                        responsive: true, displayModeBar: false, scrollZoom: false
+                    });
+                } else { console.error("无法初始化 Plotly"); }
+            }
+
+            // --- 事件监听器绑定 (不变) ---
+            if (biasSlider) biasSlider.addEventListener('input', updatePlot);
+            if (precisionSlider) precisionSlider.addEventListener('input', updatePlot);
+            if (btnGoodGood) btnGoodGood.addEventListener('click', () => { if(biasSlider) biasSlider.value = 0.0; if(precisionSlider) precisionSlider.value = 1.0; updatePlot(); });
+            if (btnGoodPoor) btnGoodPoor.addEventListener('click', () => { if(biasSlider) biasSlider.value = 2.0; if(precisionSlider) precisionSlider.value = 1.0; updatePlot(); });
+            if (btnPoorGood) btnPoorGood.addEventListener('click', () => { if(biasSlider) biasSlider.value = 0.0; if(precisionSlider) precisionSlider.value = 0.0; updatePlot(); });
+            if (btnPoorPoor) btnPoorPoor.addEventListener('click', () => { if(biasSlider) biasSlider.value = 2.0; if(precisionSlider) precisionSlider.value = 0.0; updatePlot(); });
+
+            // --- 初始化 ---
+            createPlot(); // 创建初始图表
+            if (biasValueSpan && biasSlider) biasValueSpan.textContent = parseFloat(biasSlider.value).toFixed(1) + " SD";
+            if (precisionValueSpan && precisionSlider) precisionValueSpan.textContent = parseFloat(precisionSlider.value).toFixed(2);
+
+        });
+    </script>
+
+</body>
+</html>
