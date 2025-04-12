@@ -142,10 +142,62 @@
                  grid-template-columns: 1fr; /* 按钮变为单列 */
              }
         }
+
+        @media (max-width: 768px) {
+    /* ... 其他移动端规则 ... */
+
+    .back-button {
+        top: 10px; /* 移动端稍微靠近边缘 */
+        left: 10px;
+        padding: 6px 12px; /* 移动端按钮稍小 */
+        font-size: 14px;
+    }
+
+    /* ** 再次确认 body 有移动端的 padding-top ** */
+    body {
+        padding-top: 55px; /* 为固定按钮留出空间 */
+        /* ... 其他移动端 body 规则 ... */
+    }
+}
+body {
+     /* ... 其他 body 样式 ... */
+     padding-top: 60px; /* 桌面端默认的顶部内边距 */
+ }
+
+ @media (max-width: 768px) {
+     body {
+         /* ... 其他移动端 body 样式 ... */
+         padding-top: 55px; /* 移动端顶部内边距 */
+     }
+ }
+
+
+/* --- 返回按钮样式 --- */
+.back-button {
+    position: fixed; /* **关键：使用固定定位** */
+    top: 15px;       /* **关键：设置位置** */
+    left: 15px;
+    z-index: 10001; /* 确保在最顶层 */
+    background-color: rgba(255, 255, 255, 0.85);
+    color: #34495e;
+    border: 1px solid #bbb;
+    border-radius: 5px;
+    padding: 8px 15px; /* 保持较大字体对应的 padding */
+    font-size: 15px;  /* 保持较大字体 */
+    text-decoration: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    transition: background-color 0.2s ease;
+    font-family: 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif; /* 统一字体 */
+}
+.back-button:hover {
+    background-color: rgba(255, 255, 255, 1);
+}
+
+
     </style>
 </head>
 <body>
-
+    <a href="index.html" class="back-button">&laquo; 返回主页</a>
     <div class="controls">
         <div class="control-group">
             <label for="accuracySlider">正确度:</label>
@@ -162,7 +214,6 @@
             <button id="btnPoorPoor">不精确不准确</button>
         </div>
     </div>
-    <a href="index.html" class="back-button">&laquo; 返回主页</a>
     <div id="plot"></div>
 
     <script>
