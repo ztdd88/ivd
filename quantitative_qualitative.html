@@ -6,9 +6,76 @@
     <title>定量与定性关系演示</title>
     <script src='https://cdn.bootcdn.net/ajax/libs/plotly.js/2.35.3/plotly.min.js' charset="utf-8"></script>
     <style>
-        /* --- CSS 保持不变 --- */
-        html{scroll-behavior:smooth}body{margin:0;padding:0;font-family:'Noto Sans SC','Helvetica Neue',Arial,sans-serif;background-color:#f8f9fa;line-height:1.7;box-sizing:border-box;font-size:15px;padding-top:60px;display:flex;flex-direction:column;align-items:center;min-height:calc(100vh - 60px)}.back-button{position:absolute;top:15px;left:15px;z-index:10001;background-color:rgba(255,255,255,.85);color:#34495e;border:1px solid #bbb;border-radius:5px;padding:8px 15px;font-size:15px;text-decoration:none;box-shadow:0 1px 4px rgba(0,0,0,.15);transition:background-color .2s ease}.back-button:hover{background-color:rgba(255,255,255,1)}.controls{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;margin-top:10px;margin-bottom:20px;padding:15px;background-color:#fff;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,.1);gap:15px 30px;width:95%;max-width:900px;box-sizing:border-box}.control-group{display:flex;align-items:center;gap:10px}.control-group label{font-weight:500;color:#555;width:85px;text-align:right;font-size:14px}.control-group input[type=range]{width:160px;cursor:pointer}.control-group output{font-weight:700;color:#333;min-width:50px;text-align:left;font-size:14px}.control-group select{padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:14px;min-width:180px}.results-display{width:95%;max-width:800px;box-sizing:border-box;padding:12px 15px;margin-bottom:20px;background-color:#e9ecef;border:1px solid #dee2e6;border-radius:8px;font-size:14px;text-align:center;line-height:1.8}.results-display span{margin:0 10px}.results-display strong{color:#0056b3}.qualitative-positive{color:darkred;font-weight:700}.qualitative-negative{color:darkblue;font-weight:700}#plot{width:95%;max-width:900px;height:60vh;min-height:400px;background-color:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.08);margin:0 auto 20px auto}@media (max-width:768px){body{padding-top:55px;font-size:14px}.back-button{padding:6px 12px;font-size:14px}.controls{flex-direction:column;align-items:stretch;gap:15px;padding:12px;margin-bottom:15px}.control-group{flex-direction:column;align-items:flex-start;width:100%;gap:5px}.control-group label{width:auto;text-align:left;margin-bottom:3px}.control-group input[type=range]{width:100%}.control-group output{min-width:40px;text-align:left;margin-top:3px}.control-group select{width:100%;min-width:unset}.results-display{text-align:left}.results-display span{display:block;margin:5px 0}#plot{width:100%;height:60vh;min-height:350px}}@media (max-width:480px){.buttons{grid-template-columns:1fr}} .error { color: red; font-weight: bold;} /* Error message style */
+        /* --- 基本样式 --- */
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            line-height: 1.7;
+            box-sizing: border-box;
+            font-size: 15px;
+            padding-top: 60px; /* 为返回按钮预留空间 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: calc(100vh - 60px);
+        }
+        /* --- 返回按钮样式 --- */
+        .back-button {
+            position: absolute; top: 15px; left: 15px; z-index: 10001;
+            background-color: rgba(255, 255, 255, 0.85); color: #34495e;
+            border: 1px solid #bbb; border-radius: 5px; padding: 8px 15px;
+            font-size: 15px; text-decoration: none;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+            transition: background-color 0.2s ease;
+        }
+        .back-button:hover { background-color: rgba(255, 255, 255, 1); }
+        /* --- 控件区域样式 --- */
+        .controls {
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+            margin-top: 10px; margin-bottom: 20px; padding: 15px; background-color: #fff;
+            border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); gap: 15px 30px;
+            width: 95%; max-width: 900px; box-sizing: border-box;
+        }
+        .control-group { display: flex; align-items: center; gap: 10px; flex-grow: 1; min-width: 280px;}
+        .control-group label { font-weight: 500; color: #555; width: 85px; text-align: right; font-size: 14px; flex-shrink: 0;}
+        .control-group input[type="range"] { flex-grow: 1; min-width: 100px; cursor: pointer; }
+        .control-group output { font-weight: bold; color: #333; min-width: 50px; text-align: left; font-size: 14px; }
+        .control-group select { padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; min-width: 180px; flex-grow: 1; }
+        /* --- 结果显示区域 --- */
+        .results-display { width: 95%; max-width: 800px; box-sizing: border-box; padding: 12px 15px; margin-bottom: 20px; background-color: #e9ecef; border: 1px solid #dee2e6; border-radius: 8px; font-size: 14px; text-align: center; line-height: 1.8; }
+        .results-display span { margin: 0 10px; }
+        .results-display strong { color: #0056b3; }
+        .qualitative-positive, .qualitative-negative { padding: 3px 6px; border-radius: 3px; font-weight: bold; margin-left: 5px; display: inline-block; }
+        .qualitative-positive { background-color: rgba(255, 0, 0, 0.1); color: darkred; }
+        .qualitative-negative { background-color: rgba(0, 0, 255, 0.1); color: darkblue; }
+        #plot { width: 95%; max-width: 900px; height: 60vh; min-height: 400px; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); margin: 0 auto 20px auto; }
+        .error { color: red; font-weight: bold;}
 
+        @media (max-width: 768px) {
+            body { padding-top: 55px; font-size: 14px; }
+            .back-button { padding: 6px 12px; font-size: 14px; }
+            .controls { flex-direction: column; align-items: stretch; gap: 18px; padding: 15px; margin-bottom: 15px;} /* 增加垂直间距 */
+            .control-group { flex-direction: row; /* 恢复行内 */ align-items: center; width: 100%; gap: 8px; min-width: unset; justify-content: space-between; } /* 尝试两端对齐 */
+            .control-group label { width: auto; flex-shrink: 0; margin-bottom: 0; text-align: left;} /* 标签宽度自动 */
+            .control-group input[type="range"] { flex-grow: 1; width: auto; min-width: 80px;} /* 滑块扩展 */
+            .control-group output { min-width: 45px; flex-shrink: 0;}
+            .control-group select { min-width: 150px; flex-grow: 0;} /* 选择器不扩展 */
+             /* 特殊处理选择器组 */
+            .control-group:has(select) { justify-content: flex-start; } /* 让选择器组左对齐 */
+
+            .results-display { text-align: center; }
+            .results-display span { display: inline-block; margin: 3px 5px; }
+            #plot { width: 100%; height: 55vh; min-height: 300px; }
+        }
+         @media (max-width: 480px) {
+             .control-group { flex-wrap: wrap; /* 允许内部换行 */ justify-content: flex-start; } /* 窄屏控件组内换行 */
+             .control-group input[type="range"] { min-width: 100%; order: 2; margin-top: 5px;} /* 滑块换行 */
+             .control-group output { order: 3; margin-left: 10px;}
+             .control-group label { order: 1;}
+             .results-display span { display: block; margin: 5px 0; text-align: center;}
+         }
     </style>
 </head>
 <body>
@@ -39,21 +106,22 @@
     <div class="results-display" id="resultsDisplay">
         <span id="measuredValueDisplay">测量值 (X): <strong id="measuredValText">50</strong></span> |
         <span id="degreeValueDisplay">程度值 (Y): <strong id="degreeValText">5.00</strong></span> |
-        <span >定性判断: <strong id="qualitativeResultText" class="qualitative-positive">阳性</strong></span>
+        <span>定性判断: <strong id="qualitativeResultText" class="qualitative-positive">阳性</strong></span>
     </div>
-
 
     <div id="plot"></div>
 
     <script>
-        console.log("Script start"); // 保留少量关键日志
+        console.log("Script start");
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log("DOM Loaded");
 
             // --- 获取元素 ---
             const plotDiv = document.getElementById('plot');
+            console.log("Plot div element:", plotDiv ? "Found" : "NOT FOUND!");
             const conceptSelector = document.getElementById('conceptSelector');
+            console.log("Concept selector element:", conceptSelector ? "Found" : "NOT FOUND!");
             const thresholdSlider = document.getElementById('thresholdSlider');
             const measuredValueSlider = document.getElementById('measuredValueSlider');
             const thresholdValueSpan = document.getElementById('thresholdValue');
@@ -66,70 +134,79 @@
             const measuredValueLabel = document.getElementById('measuredValueLabel');
             const measuredValueDisplay = document.getElementById('measuredValueDisplay');
             const degreeValueDisplay = document.getElementById('degreeValueDisplay');
+            console.log("DOM elements acquisition attempted");
 
-            // --- 定义不同概念场景的参数 (!!! 仔细检查语法，特别是逗号 !!!) ---
+            // --- 定义概念场景参数 (语法修正版) ---
             const concepts = [
                 { // 0: 疾病筛查
                     name: "疾病筛查 (阴/阳)", xLabel: "生物标记物浓度", yLabel: "阳性程度",
                     posXQualitative: "阳性", negQualitative: "阴性",
-                    curveFunc: (x) => 0.1 * x, xRange: [0, 100], yRange: [0, 10],
+                    curveFunc: function(x){ return 0.1 * x; },
+                    xRange: [0, 100], yRange: [0, 10],
                     thresholdMin: 0, thresholdMax: 10, thresholdStep: 0.1, thresholdDefault: 4.0,
                     measuredMin: 0, measuredMax: 100, measuredStep: 1, measuredDefault: 55,
                     thresholdUnits: ""
-                }, // **** 注意这里的逗号 ****
+                }, // 注意逗号
                 { // 1: 身高判断
                     name: "身高判断 (高/矮)", xLabel: "测量身高 (cm)", yLabel: "相对身高值",
                     posXQualitative: "高", negQualitative: "矮",
-                    curveFunc: (x) => x - 165, xRange: [140, 190], yRange: [-25, 25],
+                    curveFunc: function(x){ return x - 165; },
+                    xRange: [140, 190], yRange: [-25, 25],
                     thresholdMin: -10, thresholdMax: 15, thresholdStep: 1, thresholdDefault: 5,
                     measuredMin: 140, measuredMax: 190, measuredStep: 1, measuredDefault: 170,
                     thresholdUnits: " cm"
-                }, // **** 注意这里的逗号 ****
+                }, // 注意逗号
                 { // 2: 考试成绩
                     name: "考试成绩 (及格/不及格)", xLabel: "考试分数", yLabel: "分数",
                     posXQualitative: "及格", negQualitative: "不及格",
-                    curveFunc: (x) => x, xRange: [0, 100], yRange: [0, 100],
+                    curveFunc: function(x){ return x; },
+                    xRange: [0, 100], yRange: [0, 100],
                     thresholdMin: 0, thresholdMax: 100, thresholdStep: 1, thresholdDefault: 60,
                     measuredMin: 0, measuredMax: 100, measuredStep: 1, measuredDefault: 75,
                     thresholdUnits: "分"
-                }, // **** 注意这里的逗号 ****
+                }, // 注意逗号
                  { // 3: 主观评价
                     name: "主观评价 (美/丑)", xLabel: "客观特征评分", yLabel: "美观度评分",
                     posXQualitative: "美", negQualitative: "丑",
-                    curveFunc: (x) => 10 / (1 + Math.exp(-(x - 50) * 0.1)), // Sigmoid
+                    curveFunc: function(x){ return 10 / (1 + Math.exp(-(x - 50) * 0.1)); },
                     xRange: [0, 100], yRange: [0, 10],
                     thresholdMin: 0, thresholdMax: 10, thresholdStep: 0.1, thresholdDefault: 6.5,
                     measuredMin: 0, measuredMax: 100, measuredStep: 1, measuredDefault: 60,
-                     thresholdUnits: ""
-                } // **** 最后一个对象后面没有逗号 ****
+                    thresholdUnits: ""
+                } // 最后一个后面无逗号
             ];
-            console.log("Concepts array defined. Length:", concepts.length); // 检查数组长度
+            console.log("Concepts array defined. Length:", concepts.length); // 应输出 4
 
             let currentConcept; // 在外部声明
 
-            // --- 常量 --- (不变)
+            // --- 常量 ---
             const POS_COLOR = "rgba(255, 0, 0, 0.08)"; const NEG_COLOR = "rgba(0, 0, 255, 0.08)";
             const POS_CLASS = "qualitative-positive"; const NEG_CLASS = "qualitative-negative";
 
-            // --- 更新可视化函数 (updateVisualization) --- (不变)
-             function updateVisualization() {
-                if (typeof Plotly === 'undefined' || !plotDiv || !thresholdSlider || !measuredValueSlider || !currentConcept) return;
+            // --- 更新可视化函数 (updateVisualization) ---
+            function updateVisualization() {
+                // console.log("updateVisualization called");
+                if (!currentConcept || typeof Plotly === 'undefined' || !plotDiv || !thresholdSlider || !measuredValueSlider) {
+                     console.error("Update aborted: Plotly, elements, or currentConcept not ready."); return;
+                }
                 try {
                     const thresholdY = parseFloat(thresholdSlider.value); const measuredX = parseFloat(measuredValueSlider.value);
                     const markerY = currentConcept.curveFunc(measuredX); if(isNaN(markerY)){return;}
-                    const qualitativeResult = markerY >= thresholdY ? currentConcept.posXQualitative : currentConcept.negQualitative;
-                    const qualitativeClass = markerY >= thresholdY ? POS_CLASS : NEG_CLASS;
+                    const isPositive = markerY >= thresholdY;
+                    const qualitativeResult = isPositive ? currentConcept.posXQualitative : currentConcept.negQualitative;
+                    const qualitativeClass = isPositive ? POS_CLASS : NEG_CLASS;
+
                     if(thresholdValueSpan)thresholdValueSpan.textContent=thresholdY.toFixed(currentConcept.thresholdStep.toString().includes('.')?1:0)+currentConcept.thresholdUnits;
                     if(measuredValueOutput)measuredValueOutput.textContent=measuredX.toFixed(0);
                     if(measuredValueDisplay)measuredValueDisplay.innerHTML=`${currentConcept.xLabel}: <strong id="measuredValText">${measuredX.toFixed(1)}</strong>`;
                     if(degreeValueDisplay)degreeValueDisplay.innerHTML=`${currentConcept.yLabel}: <strong id="degreeValText">${markerY.toFixed(2)}</strong>`;
-                    if(qualitativeResultText){qualitativeResultText.textContent=qualitativeResult;qualitativeResultText.className=qualitativeClass;}
+                    if(qualitativeResultText){qualitativeResultText.textContent=qualitativeResult; qualitativeResultText.className = ''; qualitativeResultText.classList.add(qualitativeClass);} // 确保只应用一个类
+
                     const updateData={'x':[[measuredX]],'y':[[markerY]]};
                     const updateLayout={'shapes[0].y0':thresholdY,'shapes[0].y1':thresholdY,'shapes[1].y0':thresholdY,'shapes[1].y1':currentConcept.yRange[1],'shapes[2].y1':thresholdY,'shapes[2].y0':currentConcept.yRange[0],'shapes[3].x0':measuredX,'shapes[3].x1':measuredX};
-                    Plotly.update(plotDiv,updateData,updateLayout,[1]);
+                    Plotly.update(plotDiv,updateData,updateLayout,[1]); // 更新 trace 1 (活动点)
                 } catch(error){console.error("Error during updateVisualization:",error);}
             }
-
 
             // --- 初始化绘图函数 (createPlot) ---
             function createPlot() {
@@ -139,43 +216,37 @@
 
                 try {
                     const selectedIndex = parseInt(conceptSelector.value);
-                    console.log("Selected index from dropdown:", selectedIndex);
-                     // ** 修正概念获取逻辑 **
+                    console.log("Selected index:", selectedIndex, "Concepts length:", concepts.length); // 增加日志
+                    // ** 修正概念获取逻辑 **
                     if (isNaN(selectedIndex) || selectedIndex < 0 || selectedIndex >= concepts.length) {
-                        console.warn("Invalid index, using default 0. concepts.length:", concepts.length);
+                        console.warn(`Invalid index ${selectedIndex}, using default 0. concepts.length: ${concepts.length}`);
                         currentConcept = concepts[0]; // 使用索引0作为后备
-                        conceptSelector.value = "0"; // 确保下拉菜单也重置
-                        if (!currentConcept) { // 如果 concepts[0] 也是 undefined (说明数组本身有问题)
-                           throw new Error("Concepts array is empty or invalid.");
-                        }
+                        conceptSelector.value = "0";
+                        if (!currentConcept) { throw new Error("Concepts array is empty or invalid."); }
                     } else {
                         currentConcept = concepts[selectedIndex];
                     }
-                    console.log("Creating plot for concept:", currentConcept.name); // 现在应该有值了
+                    console.log("Using concept:", currentConcept.name); // 现在应该有值了
 
-                    // 设置滑块范围和值
+                    // ... (设置滑块范围和值) ...
                     thresholdSlider.min = currentConcept.thresholdMin; thresholdSlider.max = currentConcept.thresholdMax; thresholdSlider.step = currentConcept.thresholdStep; thresholdSlider.value = currentConcept.thresholdDefault;
                     measuredValueSlider.min = currentConcept.measuredMin; measuredValueSlider.max = currentConcept.measuredMax; measuredValueSlider.step = currentConcept.measuredStep; measuredValueSlider.value = currentConcept.measuredDefault;
 
-                    // 更新标签和初始输出值
+                    // ... (更新标签和初始输出值) ...
                     if (thresholdValueSpan) thresholdValueSpan.textContent = parseFloat(thresholdSlider.value).toFixed(currentConcept.thresholdStep.toString().includes('.') ? 1 : 0) + currentConcept.thresholdUnits;
                     if (measuredValueOutput) measuredValueOutput.textContent = parseFloat(measuredValueSlider.value).toFixed(0);
                     if (thresholdLabel) thresholdLabel.textContent = `判断阈值 (${currentConcept.thresholdUnits || 'Y'}):`;
                     if (measuredValueLabel) measuredValueLabel.textContent = `${currentConcept.xLabel}:`;
 
-                    // 获取初始值
-                    const initialThresholdY = parseFloat(thresholdSlider.value);
-                    const initialMeasuredX = parseFloat(measuredValueSlider.value);
-                    const initialMarkerY = currentConcept.curveFunc(initialMeasuredX);
-                     if (isNaN(initialMarkerY)) {console.error("Initial markerY is NaN!"); return;}
 
-                    // 计算初始曲线数据
+                    // ... (获取初始值, 计算曲线数据, 定义轨迹) ...
+                    const initialThresholdY = parseFloat(thresholdSlider.value); const initialMeasuredX = parseFloat(measuredValueSlider.value); const initialMarkerY = currentConcept.curveFunc(initialMeasuredX);
+                    if (isNaN(initialMarkerY)) {console.error("Initial markerY is NaN!"); return;}
                     const initialCurveX = Array.from({length: 101}, (_, i) => currentConcept.xRange[0] + i * ((currentConcept.xRange[1] - currentConcept.xRange[0]) / 100));
                     const initialCurveY = initialCurveX.map(x => currentConcept.curveFunc(x));
-
-                    // 定义轨迹
                     const curveTrace = { x: initialCurveX, y: initialCurveY, mode: 'lines', type: 'scatter', name: '标准曲线', line: { color: 'rgb(44, 160, 44)', width: 2 } };
                     const markerTrace = { x: [initialMeasuredX], y: [initialMarkerY], mode: 'markers', type: 'scatter', name: '当前测量点', marker: { color: 'red', size: 12, symbol: 'cross' } };
+
 
                     // 定义布局
                     const layout = {
@@ -191,10 +262,11 @@
                             { type: 'line', xref: 'x', yref: 'paper', x0: initialMeasuredX, y0: 0, x1: initialMeasuredX, y1: 1, line: { color: "grey", width: 1.5, dash: "dot" }, layer: 'above', name: 'MeasurementLine' }
                         ]
                     };
+                    console.log("Layout defined for plot");
 
                     // 绘图
                     Plotly.newPlot(plotDiv, [curveTrace, markerTrace], layout, { responsive: true, displayModeBar: false, scrollZoom: false });
-                    console.log("Plotly.newPlot called");
+                    console.log("Plotly.newPlot called successfully for initial plot");
 
                     // 更新文本显示区域（在绘图后）
                     updateVisualization();
