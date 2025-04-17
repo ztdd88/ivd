@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>模拟色彩混合 (重叠效果 - 优化版)</title>
+    <title>模拟色彩混合 (增强版)</title>
     <style>
         body {
             font-family: 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif;
@@ -11,7 +11,7 @@
             flex-direction: column;
             align-items: center;
             padding: 20px;
-            padding-top: 70px; /* 为返回按钮留空间 */
+            padding-top: 70px;
             background-color: #f0f2f5;
             margin: 0;
             min-height: calc(100vh - 40px);
@@ -27,75 +27,66 @@
 
         .controls-container {
             display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
-            margin-bottom: 30px; padding: 15px 20px; background-color: #fff; border-radius: 8px;
+            margin-bottom: 25px; padding: 15px 20px; background-color: #fff; border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); gap: 15px 25px; width: 95%;
-            max-width: 800px; box-sizing: border-box;
+            max-width: 900px; /* 稍微加宽以容纳更多控件 */
+             box-sizing: border-box;
         }
-        .control-group { display: flex; align-items: center; gap: 10px; min-width: 230px; }
-        .control-group label { font-weight: 500; color: #555; width: 45px; text-align: right; font-size: 14px; }
+        .control-group { display: flex; align-items: center; gap: 8px; min-width: 240px; /* 调整最小宽度 */ }
+        .control-group label { font-weight: 500; color: #555; width: 45px; text-align: right; font-size: 14px; flex-shrink: 0;}
         .control-group input[type="range"] { flex-grow: 1; min-width: 100px; cursor: pointer; }
         .control-group output { font-weight: bold; color: #333; min-width: 35px; text-align: left; font-size: 14px; }
 
         /* 滑块拇指颜色 */
-        #redSlider::-webkit-slider-thumb { background: #e74c3c; height: 18px; width: 18px; border-radius: 50%;}
-        #redSlider::-moz-range-thumb { background: #e74c3c; height: 18px; width: 18px; border-radius: 50%;}
-        #blueSlider::-webkit-slider-thumb { background: #3498db; height: 18px; width: 18px; border-radius: 50%;}
-        #blueSlider::-moz-range-thumb { background: #3498db; height: 18px; width: 18px; border-radius: 50%;}
+        #redSlider::-webkit-slider-thumb { background: #e74c3c; height: 16px; width: 16px; border-radius: 50%;}
+        #redSlider::-moz-range-thumb { background: #e74c3c; height: 16px; width: 16px; border-radius: 50%;}
+        #blueSlider::-webkit-slider-thumb { background: #3498db; height: 16px; width: 16px; border-radius: 50%;}
+        #blueSlider::-moz-range-thumb { background: #3498db; height: 16px; width: 16px; border-radius: 50%;}
+        #yellowSlider::-webkit-slider-thumb { background: #f1c40f; height: 16px; width: 16px; border-radius: 50%;}
+        #yellowSlider::-moz-range-thumb { background: #f1c40f; height: 16px; width: 16px; border-radius: 50%;}
+        #tintShadeSlider::-webkit-slider-thumb { background: #888; height: 16px; width: 8px; border-radius: 2px;} /* 明暗滑块样式 */
+        #tintShadeSlider::-moz-range-thumb { background: #888; height: 16px; width: 8px; border-radius: 2px;}
 
         .mix-area-container { width: 95%; max-width: 600px; margin: 0 auto; text-align: center; }
-
-        /* 混合区域尺寸 */
         #mix-area {
-            width: 600px;  /* 调整后尺寸 */
-            height: 600px; /* 调整后尺寸 */
-            border: 1px solid #ccc; background-color: #ffffff; margin: 0 auto 20px auto;
-            position: relative; overflow: hidden; border-radius: 8px;
+            width: 600px; height: 600px; border: 1px solid #ccc; background-color: #ffffff;
+            margin: 0 auto 15px auto; position: relative; overflow: hidden; border-radius: 8px;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
         }
-
-        /* 色块尺寸和形状 */
         .color-shape {
-            position: absolute;
-            width: 500px;  /* 调整后尺寸 */
-            height: 500px; /* 调整后尺寸 */
-            mix-blend-mode: multiply; /* 保持混合模式 */
-            opacity: 1;
-            border-radius: 5px; /* 方形带轻微圆角 */
-            /* 背景色由 JS 控制 */
+            position: absolute; width: 500px; height: 500px;
+            mix-blend-mode: multiply; /* 可以尝试 'darken' 或移除此行 */
+            opacity: 1; border-radius: 5px;
         }
+        /* 调整位置使三色能较好重叠 */
+        #red-shape { top: 40px; left: 80px; }
+        #blue-shape { top: 100px; left: 40px; }
+        #yellow-shape { top: 100px; left: 120px; }
 
-        /* 色块位置 */
-        #red-shape {
-            top: 40px;
-            left: 40px;
-        }
-        #blue-shape {
-            top: 60px;
-            left: 40px;
-        }
+        .color-values { font-size: 14px; color: #555; margin-bottom: 15px;}
+        .color-values span { margin: 0 5px; display: inline-block;}
 
-        /* 移除遮罩层样式，如果你确定不用的话 */
-        /*
-        .mask-layer { ... }
-        .mask-layer.visible { ... }
-        */
+        /* 补色显示区域 */
+        .complement-section { text-align: center; margin-top: 10px; }
+        #showComplementBtn { padding: 6px 12px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; background-color: #f0f0f0; cursor: pointer; transition: background-color 0.2s ease; }
+        #showComplementBtn:hover { background-color: #e0e0e0; }
+        #complementSwatch { display: inline-block; width: 30px; height: 20px; border: 1px solid #555; vertical-align: middle; margin-left: 10px; background-color: #fff; }
+        #complementInfo { font-size: 13px; color: #666; margin-left: 5px; vertical-align: middle;}
 
-        .color-values { font-size: 14px; color: #555; } /* 调整字体大小 */
-
-        /* 移动端响应式调整 */
-        @media (max-width: 640px) { /* 调整断点 */
+        @media (max-width: 640px) { /* 移动端 */
              body { padding-top: 55px; font-size: 14px; }
              .back-button { padding: 6px 12px; font-size: 14px; }
              .controls-container { flex-direction: column; align-items: stretch; gap: 15px; padding: 15px;}
              .control-group { flex-direction: column; align-items: flex-start; width: 100%; gap: 5px; min-width: unset;}
              .control-group label { width: auto; text-align: left; margin-bottom: 3px;}
              .control-group input[type="range"] { width: 100%; }
-
-             /* 按比例缩小移动端尺寸 */
-             #mix-area { width: 300px; height: 300px; } /* 缩小混合区 */
-             .color-shape { width: 250px; height: 250px; } /* 缩小色块 */
-             #red-shape { top: 20px; left: 20px;} /* 保持相对位置 */
-             #blue-shape { top: 30px; left: 20px;} /* 保持相对位置 */
+             #mix-area { width: 300px; height: 300px; }
+             .color-shape { width: 200px; height: 200px; }
+             #red-shape { top: 30px; left: 50px;}
+             #blue-shape { top: 70px; left: 30px;}
+             #yellow-shape { top: 70px; left: 70px;}
+             .color-values span { display: block; margin: 2px 0;} /* 竖排显示 */
+             .complement-section { margin-top: 15px; }
         }
     </style>
 </head>
@@ -104,80 +95,182 @@
 
     <div class="controls-container">
          <div class="control-group">
-             <label for="redSlider">红 (R):</label>
+             <label for="redSlider">红:</label>
              <input type="range" id="redSlider" min="0" max="100" step="1" value="70">
              <output id="redValue">70</output>%
          </div>
          <div class="control-group">
-             <label for="blueSlider">蓝 (B):</label>
+             <label for="blueSlider">蓝:</label>
              <input type="range" id="blueSlider" min="0" max="100" step="1" value="70">
              <output id="blueValue">70</output>%
          </div>
+         <div class="control-group">
+             <label for="yellowSlider">黄:</label>
+             <input type="range" id="yellowSlider" min="0" max="100" step="1" value="0">
+             <output id="yellowValue">0</output>%
          </div>
+          <div class="control-group">
+             <label for="tintShadeSlider">明暗:</label>
+             <input type="range" id="tintShadeSlider" min="-100" max="100" step="1" value="0">
+             <output id="tintShadeValue">0</output>%
+         </div>
+     </div>
 
     <div class="mix-area-container">
         <div id="mix-area">
-            <div id="red-shape" class="color-shape">
-                 </div>
-            <div id="blue-shape" class="color-shape">
-                 </div>
+            <div id="red-shape" class="color-shape"></div>
+            <div id="blue-shape" class="color-shape"></div>
+            <div id="yellow-shape" class="color-shape"></div>
         </div>
         <div class="color-values" id="colorValues">
             红: <span id="redValDisplay">70</span>% |
-            蓝: <span id="blueValDisplay">70</span>%
+            蓝: <span id="blueValDisplay">70</span>% |
+            黄: <span id="yellowValDisplay">0</span>% |
+            明暗: <span id="tintShadeValDisplay">0</span>%
         </div>
+         <div class="complement-section">
+             <button id="showComplementBtn">显示主色调补色</button>
+             <div id="complementSwatch"></div>
+             <span id="complementInfo"></span>
+         </div>
     </div>
-
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // --- 获取元素 ---
             const redSlider = document.getElementById('redSlider');
             const blueSlider = document.getElementById('blueSlider');
-            // const maskToggle = document.getElementById('maskToggle'); // 移除
+            const yellowSlider = document.getElementById('yellowSlider');
+            const tintShadeSlider = document.getElementById('tintShadeSlider');
+            const showComplementBtn = document.getElementById('showComplementBtn');
 
             const redValueSpan = document.getElementById('redValue');
             const blueValueSpan = document.getElementById('blueValue');
+            const yellowValueSpan = document.getElementById('yellowValue');
+            const tintShadeValueSpan = document.getElementById('tintShadeValue');
 
             const redShape = document.getElementById('red-shape');
             const blueShape = document.getElementById('blue-shape');
-            // const redMask = document.getElementById('red-mask'); // 移除
-            // const blueMask = document.getElementById('blue-mask'); // 移除
+            const yellowShape = document.getElementById('yellow-shape');
 
             const redValDisplay = document.getElementById('redValDisplay');
             const blueValDisplay = document.getElementById('blueValDisplay');
+            const yellowValDisplay = document.getElementById('yellowValDisplay');
+            const tintShadeValDisplay = document.getElementById('tintShadeValDisplay');
+            const complementSwatch = document.getElementById('complementSwatch');
+            const complementInfo = document.getElementById('complementInfo');
 
+            // --- 常量和基础色 ---
             const BASE_ALPHA = 0.05;
             const MAX_ADDITIONAL_ALPHA = 0.85;
+            const BASE_COLORS = {
+                red:    { r: 231, g: 76,  b: 60  }, // ~#e74c3c
+                blue:   { r: 52,  g: 152, b: 219 }, // ~#3498db
+                yellow: { r: 241, g: 196, b: 15  }  // ~#f1c40f
+            };
 
-            function updateColors() {
-                const redIntensity = parseInt(redSlider.value);
-                const blueIntensity = parseInt(blueSlider.value);
-
-                redValueSpan.textContent = redIntensity;
-                blueValueSpan.textContent = blueIntensity;
-                redValDisplay.textContent = redIntensity;
-                blueValDisplay.textContent = blueIntensity;
-
-                const redAlpha = BASE_ALPHA + (redIntensity / 100) * MAX_ADDITIONAL_ALPHA;
-                const blueAlpha = BASE_ALPHA + (blueIntensity / 100) * MAX_ADDITIONAL_ALPHA;
-
-                // ** 只更新背景色即可 **
-                redShape.style.backgroundColor = `rgba(231, 76, 60, ${redAlpha})`; // 使用 E74C3C 红
-                blueShape.style.backgroundColor = `rgba(52, 152, 219, ${blueAlpha})`; // 使用 3498DB 蓝
-
+            // --- Tint/Shade 函数 ---
+            function applyTintShade(origR, origG, origB, amount) {
+                let newR = origR, newG = origG, newB = origB;
+                const factor = Math.abs(amount) / 100;
+                if (amount > 0) { // Tint
+                    newR = Math.round(origR + (255 - origR) * factor);
+                    newG = Math.round(origG + (255 - origG) * factor);
+                    newB = Math.round(origB + (255 - origB) * factor);
+                } else if (amount < 0) { // Shade
+                    newR = Math.round(origR * (1 - factor));
+                    newG = Math.round(origG * (1 - factor));
+                    newB = Math.round(origB * (1 - factor));
+                }
+                return [newR, newG, newB];
             }
 
-            // 移除 toggleMasks 函数和 maskToggle 的监听器
-            // function toggleMasks() { ... }
-            // maskToggle.addEventListener('change', toggleMasks);
+            // --- 更新函数 ---
+            function updateColors() {
+                // 1. 读取滑块值
+                const redIntensity = parseInt(redSlider.value);
+                const blueIntensity = parseInt(blueSlider.value);
+                const yellowIntensity = parseInt(yellowSlider.value);
+                const tintShadeValue = parseInt(tintShadeSlider.value);
+
+                // 2. 更新滑块旁边的显示
+                redValueSpan.textContent = redIntensity;
+                blueValueSpan.textContent = blueIntensity;
+                yellowValueSpan.textContent = yellowIntensity;
+                tintShadeValueSpan.textContent = tintShadeValue;
+
+                // 3. 更新下方文本显示
+                redValDisplay.textContent = redIntensity;
+                blueValDisplay.textContent = blueIntensity;
+                yellowValDisplay.textContent = yellowIntensity;
+                tintShadeValDisplay.textContent = tintShadeValue;
+
+                // 4. 计算 Alpha
+                const redAlpha = BASE_ALPHA + (redIntensity / 100) * MAX_ADDITIONAL_ALPHA;
+                const blueAlpha = BASE_ALPHA + (blueIntensity / 100) * MAX_ADDITIONAL_ALPHA;
+                const yellowAlpha = BASE_ALPHA + (yellowIntensity / 100) * MAX_ADDITIONAL_ALPHA;
+
+                // 5. 应用 Tint/Shade 到基础色
+                const [finalR_r, finalG_r, finalB_r] = applyTintShade(BASE_COLORS.red.r, BASE_COLORS.red.g, BASE_COLORS.red.b, tintShadeValue);
+                const [finalR_b, finalG_b, finalB_b] = applyTintShade(BASE_COLORS.blue.r, BASE_COLORS.blue.g, BASE_COLORS.blue.b, tintShadeValue);
+                const [finalR_y, finalG_y, finalB_y] = applyTintShade(BASE_COLORS.yellow.r, BASE_COLORS.yellow.g, BASE_COLORS.yellow.b, tintShadeValue);
+
+                // 6. 更新色块背景色
+                redShape.style.backgroundColor = `rgba(${finalR_r}, ${finalG_r}, ${finalB_r}, ${redAlpha})`;
+                redShape.style.opacity = redIntensity > 0 ? '1' : '0';
+
+                blueShape.style.backgroundColor = `rgba(${finalR_b}, ${finalG_b}, ${finalB_b}, ${blueAlpha})`;
+                blueShape.style.opacity = blueIntensity > 0 ? '1' : '0';
+
+                yellowShape.style.backgroundColor = `rgba(${finalR_y}, ${finalG_y}, ${finalB_y}, ${yellowAlpha})`;
+                yellowShape.style.opacity = yellowIntensity > 0 ? '1' : '0';
+            }
+
+            // --- 显示补色函数 ---
+             function displayComplement() {
+                const redIntensity = parseInt(redSlider.value);
+                const blueIntensity = parseInt(blueSlider.value);
+                const yellowIntensity = parseInt(yellowSlider.value);
+                const tintShadeValue = parseInt(tintShadeSlider.value);
+
+                let dominantColorName = "无";
+                let baseR = 128, baseG = 128, baseB = 128;
+
+                // 简单判断主色调（强度最高者，忽略明暗）
+                if (redIntensity >= blueIntensity && redIntensity >= yellowIntensity && redIntensity > 0) {
+                    dominantColorName = "红"; baseR = BASE_COLORS.red.r; baseG = BASE_COLORS.red.g; baseB = BASE_COLORS.red.b;
+                } else if (blueIntensity > redIntensity && blueIntensity >= yellowIntensity && blueIntensity > 0) {
+                    dominantColorName = "蓝"; baseR = BASE_COLORS.blue.r; baseG = BASE_COLORS.blue.g; baseB = BASE_COLORS.blue.b;
+                } else if (yellowIntensity > 0) {
+                    dominantColorName = "黄"; baseR = BASE_COLORS.yellow.r; baseG = BASE_COLORS.yellow.g; baseB = BASE_COLORS.yellow.b;
+                }
+
+                if (dominantColorName !== "无") {
+                    // 先应用明暗调整到主色调上
+                    const [finalR, finalG, finalB] = applyTintShade(baseR, baseG, baseB, tintShadeValue);
+                    // 计算补色
+                    const complementR = 255 - finalR;
+                    const complementG = 255 - finalG;
+                    const complementB = 255 - finalB;
+
+                    complementSwatch.style.backgroundColor = `rgb(${complementR}, ${complementG}, ${complementB})`;
+                    complementInfo.textContent = `当前主色调(${dominantColorName})的补色`;
+                } else {
+                     complementSwatch.style.backgroundColor = '#eee'; // 无主色时显示灰色
+                     complementInfo.textContent = '无明显主色调';
+                }
+            }
+
 
             // --- 事件监听器绑定 ---
             redSlider.addEventListener('input', updateColors);
             blueSlider.addEventListener('input', updateColors);
+            yellowSlider.addEventListener('input', updateColors);
+            tintShadeSlider.addEventListener('input', updateColors); // 明暗滑块也触发更新
+            showComplementBtn.addEventListener('click', displayComplement); // 按钮触发补色显示
 
             // --- 初始化 ---
             updateColors(); // 根据初始滑块值设置颜色
-            // toggleMasks(); // 移除
 
         });
     </script>
