@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模拟色彩混合 (重叠效果 - 优化版)</title>
+    <style>
+        body {
+            font-family: 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            padding-top: 70px; /* 为返回按钮留空间 */
+            background-color: #f0f2f5;
+            margin: 0;
+            min-height: calc(100vh - 40px);
+            box-sizing: border-box;
+        }
+        .back-button {
+             position: absolute; top: 15px; left: 15px; z-index: 10;
+             background-color: rgba(255, 255, 255, 0.85); color: #34495e; border: 1px solid #bbb;
+             border-radius: 5px; padding: 8px 15px; font-size: 15px; text-decoration: none;
+             box-shadow: 0 1px 4px rgba(0,0,0,0.15); transition: background-color 0.2s ease;
+        }
+        .back-button:hover { background-color: rgba(255, 255, 255, 1); }
+
+        .controls-container {
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+            margin-bottom: 30px; padding: 15px 20px; background-color: #fff; border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); gap: 15px 25px; width: 95%;
+            max-width: 800px; box-sizing: border-box;
+        }
+        .control-group { display: flex; align-items: center; gap: 10px; min-width: 230px; }
+        .control-group label { font-weight: 500; color: #555; width: 45px; text-align: right; font-size: 14px; }
+        .control-group input[type="range"] { flex-grow: 1; min-width: 100px; cursor: pointer; }
+        .control-group output { font-weight: bold; color: #333; min-width: 35px; text-align: left; font-size: 14px; }
+
+        /* 滑块拇指颜色 */
+        #redSlider::-webkit-slider-thumb { background: #e74c3c; height: 18px; width: 18px; border-radius: 50%;}
+        #redSlider::-moz-range-thumb { background: #e74c3c; height: 18px; width: 18px; border-radius: 50%;}
+        #blueSlider::-webkit-slider-thumb { background: #3498db; height: 18px; width: 18px; border-radius: 50%;}
+        #blueSlider::-moz-range-thumb { background: #3498db; height: 18px; width: 18px; border-radius: 50%;}
+
+        .mix-area-container { width: 95%; max-width: 600px; margin: 0 auto; text-align: center; }
+
+        /* 混合区域尺寸 */
+        #mix-area {
+            width: 600px;  /* 调整后尺寸 */
+            height: 600px; /* 调整后尺寸 */
+            border: 1px solid #ccc; background-color: #ffffff; margin: 0 auto 20px auto;
+            position: relative; overflow: hidden; border-radius: 8px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        /* 色块尺寸和形状 */
+        .color-shape {
+            position: absolute;
+            width: 500px;  /* 调整后尺寸 */
+            height: 500px; /* 调整后尺寸 */
+            mix-blend-mode: multiply; /* 保持混合模式 */
+            opacity: 1;
+            border-radius: 5px; /* 方形带轻微圆角 */
+            /* 背景色由 JS 控制 */
+        }
+
+        /* 色块位置 */
+        #red-shape {
+            top: 40px;
+            left: 40px;
+        }
+        #blue-shape {
+            top: 60px;
+            left: 40px;
+        }
+
+        /* 移除遮罩层样式，如果你确定不用的话 */
+        /*
+        .mask-layer { ... }
+        .mask-layer.visible { ... }
+        */
+
+        .color-values { font-size: 14px; color: #555; } /* 调整字体大小 */
+
+        /* 移动端响应式调整 */
+        @media (max-width: 640px) { /* 调整断点 */
+             body { padding-top: 55px; font-size: 14px; }
+             .back-button { padding: 6px 12px; font-size: 14px; }
+             .controls-container { flex-direction: column; align-items: stretch; gap: 15px; padding: 15px;}
+             .control-group { flex-direction: column; align-items: flex-start; width: 100%; gap: 5px; min-width: unset;}
+             .control-group label { width: auto; text-align: left; margin-bottom: 3px;}
+             .control-group input[type="range"] { width: 100%; }
+
+             /* 按比例缩小移动端尺寸 */
+             #mix-area { width: 300px; height: 300px; } /* 缩小混合区 */
+             .color-shape { width: 250px; height: 250px; } /* 缩小色块 */
+             #red-shape { top: 20px; left: 20px;} /* 保持相对位置 */
+             #blue-shape { top: 30px; left: 20px;} /* 保持相对位置 */
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-button">&laquo; 返回主页</a>
+
+    <div class="controls-container">
+         <div class="control-group">
+             <label for="redSlider">红 (R):</label>
+             <input type="range" id="redSlider" min="0" max="100" step="1" value="70">
+             <output id="redValue">70</output>%
+         </div>
+         <div class="control-group">
+             <label for="blueSlider">蓝 (B):</label>
+             <input type="range" id="blueSlider" min="0" max="100" step="1" value="70">
+             <output id="blueValue">70</output>%
+         </div>
+         </div>
+
+    <div class="mix-area-container">
+        <div id="mix-area">
+            <div id="red-shape" class="color-shape">
+                 </div>
+            <div id="blue-shape" class="color-shape">
+                 </div>
+        </div>
+        <div class="color-values" id="colorValues">
+            红: <span id="redValDisplay">70</span>% |
+            蓝: <span id="blueValDisplay">70</span>%
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const redSlider = document.getElementById('redSlider');
+            const blueSlider = document.getElementById('blueSlider');
+            // const maskToggle = document.getElementById('maskToggle'); // 移除
+
+            const redValueSpan = document.getElementById('redValue');
+            const blueValueSpan = document.getElementById('blueValue');
+
+            const redShape = document.getElementById('red-shape');
+            const blueShape = document.getElementById('blue-shape');
+            // const redMask = document.getElementById('red-mask'); // 移除
+            // const blueMask = document.getElementById('blue-mask'); // 移除
+
+            const redValDisplay = document.getElementById('redValDisplay');
+            const blueValDisplay = document.getElementById('blueValDisplay');
+
+            const BASE_ALPHA = 0.05;
+            const MAX_ADDITIONAL_ALPHA = 0.85;
+
+            function updateColors() {
+                const redIntensity = parseInt(redSlider.value);
+                const blueIntensity = parseInt(blueSlider.value);
+
+                redValueSpan.textContent = redIntensity;
+                blueValueSpan.textContent = blueIntensity;
+                redValDisplay.textContent = redIntensity;
+                blueValDisplay.textContent = blueIntensity;
+
+                const redAlpha = BASE_ALPHA + (redIntensity / 100) * MAX_ADDITIONAL_ALPHA;
+                const blueAlpha = BASE_ALPHA + (blueIntensity / 100) * MAX_ADDITIONAL_ALPHA;
+
+                // ** 只更新背景色即可 **
+                redShape.style.backgroundColor = `rgba(231, 76, 60, ${redAlpha})`; // 使用 E74C3C 红
+                blueShape.style.backgroundColor = `rgba(52, 152, 219, ${blueAlpha})`; // 使用 3498DB 蓝
+
+            }
+
+            // 移除 toggleMasks 函数和 maskToggle 的监听器
+            // function toggleMasks() { ... }
+            // maskToggle.addEventListener('change', toggleMasks);
+
+            // --- 事件监听器绑定 ---
+            redSlider.addEventListener('input', updateColors);
+            blueSlider.addEventListener('input', updateColors);
+
+            // --- 初始化 ---
+            updateColors(); // 根据初始滑块值设置颜色
+            // toggleMasks(); // 移除
+
+        });
+    </script>
+
+</body>
+</html>
